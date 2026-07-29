@@ -11,12 +11,24 @@
 - 📦 Экспорт/импорт чатов
 - 📱 Адаптация под все экраны
 
-## Установка APK
-1. Скачайте APK из [Releases](../../releases)
-2. Включите "Неизвестные источники" в настройках Android
-3. Установите APK
+## Скачать APK
 
-## Сборка
+<!-- Загрузите последнюю версию APK: -->
+<!-- https://github.com/tojikontvru/ai-studio-apk/releases/download/v2.2/AI-Studio.apk -->
+
+### Прямая ссылка на скачивание:
+[AI-Studio.apk (v2.2)](https://github.com/tojikontvru/ai-studio-apk/releases/download/v2.2/AI-Studio.apk)
+
+### Или через страницу релизов:
+https://github.com/tojikontvru/ai-studio-apk/releases/tag/v2.2
+
+## Установка APK
+1. Скачайте APK по ссылке выше
+2. Включите "Установка из неизвестных источников" в настройках Android
+3. Откройте скачанный APK и нажмите "Установить"
+4. Если Android предупреждает о безопасности — нажмите "Всё равно установить" (приложение подписано отладочным ключом)
+
+## Сборка из исходников
 Прогона GitHub Actions или `./gradlew assembleRelease`
 
 ## API ключ
