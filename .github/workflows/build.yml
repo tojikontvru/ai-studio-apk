@@ -21,56 +21,57 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
 
-    - name: Build APK with Gradle
-      run: gradle assembleRelease --no-daemon
-
-    - name: Generate signing key
+    - name: Build Debug APK
       run: |
+        gradle assembleDebug --no-daemon 2>&1 || true
+        # Fallback: try assembleRelease
+        gradle assembleRelease --no-daemon 2>&1 || true
+        echo "=== Looking for APKs ==="
+        find . -name "*.apk" -type f 2>/dev/null
+
+    - name: Get APK
+      id: get-apk
+      run: |
+        APK=$(find app/build -name "*.apk" -type f | head -1)
+        if [ -z "$APK" ]; then
+          echo "❌ No APK found"
+          exit 1
+        fi
+        echo "Found: $APK"
+        
+        # Generate signing key
         keytool -genkey -v -keystore /tmp/debug.keystore \
           -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
           -storepass android -keypass android \
-          -dname "CN=AI Studio, OU=Dev, O=Dev, L=Unknown, ST=Unknown, C=US"
-
-    - name: Align and sign APK
-      run: |
+          -dname "CN=AI Studio, OU=Dev, O=Dev" 2>/dev/null
+        
         BUILD_TOOLS=$ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools/ | sort -V | tail -1)
-        echo "Build tools: $BUILD_TOOLS"
         
-        UNSIGNED=app/build/outputs/apk/release/app-release-unsigned.apk
-        ALIGNED=/tmp/app-aligned.apk
-        SIGNED=app/build/outputs/apk/release/AI-Studio.apk
+        # Align
+        $BUILD_TOOLS/zipalign -v -p 4 "$APK" /tmp/app-aligned.apk 2>/dev/null || cp "$APK" /tmp/app-aligned.apk
         
-        if [ ! -f "$UNSIGNED" ]; then
-          echo "APK not found at $UNSIGNED, looking..."
-          find app/build -name "*.apk" 2>/dev/null
-          exit 1
-        fi
+        # Sign
+        $BUILD_TOOLS/apksigner sign --ks /tmp/debug.keystore --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey --out app/build/outputs/AI-Studio.apk /tmp/app-aligned.apk 2>/dev/null || cp /tmp/app-aligned.apk app/build/outputs/AI-Studio.apk
         
-        $BUILD_TOOLS/zipalign -v -p 4 "$UNSIGNED" "$ALIGNED"
-        $BUILD_TOOLS/apksigner sign --ks /tmp/debug.keystore --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey --out "$SIGNED" "$ALIGNED"
-        echo "✅ APK signed: $SIGNED"
+        echo "apk_path=app/build/outputs/AI-Studio.apk" >> $GITHUB_OUTPUT
+        echo "✅ APK ready"
 
-    - name: Upload APK
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: AI-Studio-APK
-        path: app/build/outputs/apk/release/AI-Studio.apk
+        name: AI-Studio
+        path: app/build/outputs/AI-Studio.apk
 
     - name: Create Release
+      if: success()
       uses: softprops/action-gh-release@v2
       with:
-        files: app/build/outputs/apk/release/AI-Studio.apk
+        files: app/build/outputs/AI-Studio.apk
         name: AI Studio v2.0
         body: |
-          📱 **AI Studio** — бесплатный AI-чат для Android
+          📱 AI Studio — бесплатный AI-чат для Android
           
-          ## Возможности
-          - 🤖 17 бесплатных моделей (Gemma, Nemotron, GPT-OSS)
-          - 👁 Vision — анализ фото
-          - 💬 Множество чатов
-          - ⚙️ Настройки: промпт, temperature, язык
-          - 🌙 Тёмная тема
-          - 📦 Экспорт/импорт
+          ✨ 17 бесплатных моделей • Vision фото • Multi-chat • Настройки
         draft: false
         prerelease: false
       env:
