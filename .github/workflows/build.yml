@@ -20,14 +20,17 @@ jobs:
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '8.4'
+
+    - name: Generate Gradle Wrapper
+      run: |
+        gradle wrapper --gradle-version 8.4 --no-daemon 2>&1 || true
 
     - name: Build Debug APK
       run: |
-        gradle assembleDebug --no-daemon 2>&1 || true
-        # Fallback: try assembleRelease
-        gradle assembleRelease --no-daemon 2>&1 || true
-        echo "=== Looking for APKs ==="
-        find . -name "*.apk" -type f 2>/dev/null
+        chmod +x gradlew 2>/dev/null || true
+        ./gradlew assembleDebug --no-daemon 2>&1 || gradle assembleDebug --no-daemon 2>&1
 
     - name: Get APK
       id: get-apk
