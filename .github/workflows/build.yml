@@ -14,6 +14,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - uses: actions/checkout@v4
@@ -23,6 +25,9 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
@@ -75,18 +80,20 @@ jobs:
 
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/v')
-      uses: softprops/action-gh-release@v2
+      uses: ncipollo/release-action@v1
       with:
-        tag_name: ${{ github.ref_name }}
+        tag: ${{ github.ref_name }}
         name: AI Studio ${{ github.ref_name }}
         body: |
-          📱 AI Studio — бесплатный AI-чат для Android
+          📱 **AI Studio** — бесплатный AI-чат для Android
 
-          ✨ 17 бесплатных моделей • Vision фото • Multi-chat • Настройки
-        files: app/build/outputs/AI-Studio.apk
-        draft: false
-        prerelease: false
-        make_latest: true
-        fail_on_unmatched_files: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ✨ 17 бесплатных моделей
+          📷 Vision с фото
+          💬 Multi-chat
+          ⚙️ Настройки
+          🌐 Темная/светлая тема
+        artifacts: app/build/outputs/AI-Studio.apk
+        artifactContentType: application/vnd.android.package-archive
+        token: ${{ secrets.GITHUB_TOKEN }}
+        allowUpdates: true
+        removesArtifacts: true
