@@ -3,7 +3,6 @@ name: Build APK
 on:
   push:
     branches: [ main ]
-    tags: [ 'v*' ]
   workflow_dispatch:
 
 jobs:
@@ -20,58 +19,58 @@ jobs:
         distribution: 'temurin'
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
+      uses: gradle/actions/setup-gradle@v4
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+    - name: Build APK with Gradle
+      run: gradle assembleRelease --no-daemon
 
-    - name: Build APK
-      run: ./gradlew assembleRelease
-
-    - name: Sign APK (debug key)
+    - name: Generate signing key
       run: |
-        # Generate debug keystore
-        keytool -genkey -v -keystore /tmp/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=AI Studio, OU=Dev, O=Dev, L=Unknown, ST=Unknown, C=US"
+        keytool -genkey -v -keystore /tmp/debug.keystore \
+          -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+          -storepass android -keypass android \
+          -dname "CN=AI Studio, OU=Dev, O=Dev, L=Unknown, ST=Unknown, C=US"
 
-        # Align
-        $ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools/ | tail -1)/zipalign -v -p 4 \
-          app/build/outputs/apk/release/app-release-unsigned.apk \
-          /tmp/app-aligned.apk
+    - name: Align and sign APK
+      run: |
+        BUILD_TOOLS=$ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools/ | sort -V | tail -1)
+        echo "Build tools: $BUILD_TOOLS"
+        
+        UNSIGNED=app/build/outputs/apk/release/app-release-unsigned.apk
+        ALIGNED=/tmp/app-aligned.apk
+        SIGNED=app/build/outputs/apk/release/AI-Studio.apk
+        
+        if [ ! -f "$UNSIGNED" ]; then
+          echo "APK not found at $UNSIGNED, looking..."
+          find app/build -name "*.apk" 2>/dev/null
+          exit 1
+        fi
+        
+        $BUILD_TOOLS/zipalign -v -p 4 "$UNSIGNED" "$ALIGNED"
+        $BUILD_TOOLS/apksigner sign --ks /tmp/debug.keystore --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey --out "$SIGNED" "$ALIGNED"
+        echo "✅ APK signed: $SIGNED"
 
-        # Sign
-        $ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools/ | tail -1)/apksigner sign \
-          --ks /tmp/debug.keystore \
-          --ks-pass pass:android \
-          --key-pass pass:android \
-          --ks-key-alias androiddebugkey \
-          --out app/build/outputs/apk/release/AI-Studio.apk \
-          /tmp/app-aligned.apk
-
-    - name: Upload APK Artifact
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: AI-Studio-APK
         path: app/build/outputs/apk/release/AI-Studio.apk
 
     - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/v')
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: app/build/outputs/apk/release/AI-Studio.apk
-        tag_name: ${{ github.ref_name }}
-        name: AI Studio ${{ github.ref_name }}
+        name: AI Studio v2.0
         body: |
-          📱 AI Studio — бесплатный AI-чат для Android
-
-          ## Что нового
-          - 17 бесплатных моделей (Gemma, Nemotron, GPT-OSS, Ling...)
-          - Vision — отправка и анализ фото
-          - Множество чатов (как Kimi / Minimax)
-          - Тёмная и светлая тема
-          - Настройки: системный промпт, temperature, язык
-          - Экспорт/импорт чатов
-          - Адаптация под все экраны
-          - Авто-фолбек моделей
+          📱 **AI Studio** — бесплатный AI-чат для Android
+          
+          ## Возможности
+          - 🤖 17 бесплатных моделей (Gemma, Nemotron, GPT-OSS)
+          - 👁 Vision — анализ фото
+          - 💬 Множество чатов
+          - ⚙️ Настройки: промпт, temperature, язык
+          - 🌙 Тёмная тема
+          - 📦 Экспорт/импорт
         draft: false
         prerelease: false
       env:
