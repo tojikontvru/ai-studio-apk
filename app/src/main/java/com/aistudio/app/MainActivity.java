@@ -5,13 +5,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.graphics.Color;
-import android.os.Build.VERSION;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -20,17 +18,14 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Full screen
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        // Status bar color
-        if (VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(Color.parseColor("#0a0a0a"));
             getWindow().setNavigationBarColor(Color.parseColor("#0a0a0a"));
         }
 
-        // Immersive
-        if (VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -63,7 +58,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (webView.canGoBack()) {
+        if (webView != null && webView.canGoBack()) {
             webView.goBack();
         } else {
             super.onBackPressed();
@@ -73,20 +68,18 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        webView.onPause();
+        if (webView != null) webView.onPause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        webView.onResume();
+        if (webView != null) webView.onResume();
     }
 
     @Override
     protected void onDestroy() {
-        if (webView != null) {
-            webView.destroy();
-        }
+        if (webView != null) webView.destroy();
         super.onDestroy();
     }
 }
