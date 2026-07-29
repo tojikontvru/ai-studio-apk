@@ -1,24 +1,24 @@
 package com.aistudio.app;
 
-import android.app.Activity;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.graphics.Color;
+import android.os.Build;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.splashscreen.SplashScreen;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
     private WebView webView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        super.onCreate(savedInstanceState);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(Color.parseColor("#0a0a0a"));

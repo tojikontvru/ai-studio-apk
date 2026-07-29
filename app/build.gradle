@@ -10,11 +10,14 @@ android {
         applicationId "com.aistudio.app"
         minSdk 24
         targetSdk 34
-        versionCode 2
-        versionName "2.0"
+        versionCode 3
+        versionName "3.0"
     }
 
     buildTypes {
+        debug {
+            minifyEnabled false
+        }
         release {
             minifyEnabled false
         }
@@ -28,4 +31,14 @@ android {
     lint {
         abortOnError false
     }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.webkit:webkit:1.10.0'
+    implementation 'androidx.core:core-splashscreen:1.0.1'
+    implementation 'androidx.activity:activity:1.8.2'
+    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime:2.7.0'
 }
