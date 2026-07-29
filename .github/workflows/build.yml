@@ -1,0 +1,78 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Build APK
+      run: ./gradlew assembleRelease
+
+    - name: Sign APK (debug key)
+      run: |
+        # Generate debug keystore
+        keytool -genkey -v -keystore /tmp/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=AI Studio, OU=Dev, O=Dev, L=Unknown, ST=Unknown, C=US"
+
+        # Align
+        $ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools/ | tail -1)/zipalign -v -p 4 \
+          app/build/outputs/apk/release/app-release-unsigned.apk \
+          /tmp/app-aligned.apk
+
+        # Sign
+        $ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools/ | tail -1)/apksigner sign \
+          --ks /tmp/debug.keystore \
+          --ks-pass pass:android \
+          --key-pass pass:android \
+          --ks-key-alias androiddebugkey \
+          --out app/build/outputs/apk/release/AI-Studio.apk \
+          /tmp/app-aligned.apk
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AI-Studio-APK
+        path: app/build/outputs/apk/release/AI-Studio.apk
+
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: app/build/outputs/apk/release/AI-Studio.apk
+        tag_name: ${{ github.ref_name }}
+        name: AI Studio ${{ github.ref_name }}
+        body: |
+          📱 AI Studio — бесплатный AI-чат для Android
+
+          ## Что нового
+          - 17 бесплатных моделей (Gemma, Nemotron, GPT-OSS, Ling...)
+          - Vision — отправка и анализ фото
+          - Множество чатов (как Kimi / Minimax)
+          - Тёмная и светлая тема
+          - Настройки: системный промпт, temperature, язык
+          - Экспорт/импорт чатов
+          - Адаптация под все экраны
+          - Авто-фолбек моделей
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
