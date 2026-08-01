@@ -380,7 +380,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v5.1</span>
+    <span class="ver">v5.2</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -440,7 +440,7 @@ a{color:var(--accent2);text-decoration:none}
       <div class="field">
         <label>🔑 API Key (OpenRouter)</label>
         <input type="password" id="apiKeyInput" placeholder="sk-or-v1-..." autocomplete="off"/>
-        <div class="hint">Введите ключ из <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a></div>
+        <div class="hint" id="apiKeyHint">Ключ уже встроен в приложение ✅</div>
       </div>
       <div class="field">
         <label>🎨 Тема оформления</label>
@@ -451,7 +451,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">5.1</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">5.2</span></div>
         <div class="ai-row"><span class="ai-label">Разработчик</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">23 бесплатные + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Платформа</span><span class="ai-val">OpenRouter API</span></div>
@@ -537,8 +537,10 @@ function loadSettings(){
     const s=JSON.parse(localStorage.getItem('sai_set')||'{}');
     if(s.model&&CFG.MODELS.some(m=>m.id===s.model))S.model=s.model;
     S.theme=s.theme||'dark';
-    if(s.key)CFG.KEY=s.key;
-  }catch(e){}
+    if(s.key&&s.key.trim())CFG.KEY=s.key.trim();
+    // Автосохранение встроенного ключа если localStorage пуст
+    if(!s.key)saveSettings();
+  }catch(e){saveSettings()}
 }
 function saveSettings(){
   localStorage.setItem('sai_set',JSON.stringify({model:S.model,theme:S.theme,key:CFG.KEY}));
@@ -591,7 +593,7 @@ function renderChatList(){
 function renderMessages(){
   const mc=$('messages');mc.innerHTML='';
   if(!S.msgs.length){
-    mc.innerHTML=`<div class="welcome"><div class="w-icon">✦</div><h1>Привет! Я S AI</h1><p>Задайте любой вопрос — я помогу с текстом, кодом, идеями и творческими задачами</p><div class="features"><div class="feat">🆓 23 бесплатные модели</div><div class="feat">🖼 Vision / изображения</div><div class="feat">💾 Чаты сохраняются</div></div></div>`;
+    mc.innerHTML=`<div class="welcome"><div class="w-icon">✦</div><h1>Привет! Я S AI</h1><p>Задайте любой вопрос — я помогу с текстом, кодом, идеями и творческими задачами</p><div class="features"><div class="feat">🆓 23 бесплатные модели</div><div class="feat">🖼 Vision / изображения</div><div class="feat">💾 Чаты сохраняются</div><div class="feat">🔑 API подключён</div></div></div>`;
     renderSuggestions(mc);
     return;
   }
@@ -814,6 +816,9 @@ function closeSidebar(){$('sidebar').classList.remove('open');$('sidebarOverlay'
 function openSettings(){
   $('apiKeyInput').value=CFG.KEY||'';
   $('themeSelect').value=S.theme;
+  const hint=$('apiKeyHint');
+  if(CFG.KEY){hint.textContent='Ключ уже встроен в приложение ✅';hint.style.color='#22c55e'}
+  else{hint.textContent='Введите ключ из openrouter.ai/keys';hint.style.color='var(--text3)'}
   $('settingsModal').classList.add('show');
 }
 function closeSettings(){$('settingsModal').classList.remove('show')}
