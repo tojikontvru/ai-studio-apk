@@ -939,6 +939,53 @@ a{color:var(--accent2);text-decoration:none}
 .lp-ts{color:var(--text3);margin-right:6px}
 .lp-type{font-weight:700;margin-right:4px}
 
+/* ===== AD BANNERS ===== */
+.ad-banner-slot{
+  margin:6px 0;padding:0;border-radius:10px;overflow:hidden;
+  background:var(--bg3);border:1px solid var(--border2);
+  max-width:min(400px,85%);animation:fadeIn .3s ease;
+}
+.ad-banner-slot .ad-label{
+  font-size:10px;color:var(--text3);text-align:center;padding:3px 0;
+  text-transform:uppercase;letter-spacing:.5px;opacity:.7;
+}
+.ad-banner-slot .ad-placeholder{
+  width:100%;min-height:60px;display:flex;align-items:center;
+  justify-content:center;color:var(--text3);font-size:11px;
+  background:linear-gradient(135deg,var(--bg3),var(--bg4));
+}
+.ad-banner-slot .ad-placeholder.filled{min-height:0}
+/* Banner on tablet */
+@media(min-width:768px){
+  .ad-banner-slot{max-width:468px;margin:8px auto}
+}
+/* Banner on desktop/TV */
+@media(min-width:1024px){
+  .ad-banner-slot{max-width:728px;min-height:90px}
+}
+
+/* Interstitial ad overlay */
+.interstitial-content{
+  position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.85);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  animation:fadeIn .3s ease;
+}
+.interstitial-ad{
+  width:min(90vw,400px);min-height:min(70vh,500px);
+  background:var(--bg2);border-radius:12px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  animation:fadeInScale .4s ease;
+}
+.interstitial-close{
+  position:fixed;top:16px;right:16px;width:40px;height:40px;
+  border-radius:50%;background:rgba(255,255,255,.15);border:none;
+  color:#fff;font-size:18px;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  z-index:10001;backdrop-filter:blur(8px);
+  transition:all .2s;
+}
+.interstitial-close:hover{background:rgba(255,255,255,.3);transform:scale(1.1)}
+
 /* ===== ANIMATIONS ===== */
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
@@ -1151,7 +1198,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v6.6</span>
+    <span class="ver">v6.7</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -1233,7 +1280,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.6</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.7</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -1269,7 +1316,7 @@ a{color:var(--accent2);text-decoration:none}
 const CFG={
   API:'https://openrouter.ai/api/v1/chat/completions',
   KEY:atob('c2stb3ItdjEtMzc5MGY2YTdjMmFhMjNmNzc3NDE5YTFlOWI2NTdmYzc1MTE2NTVmMzQ3MGQ0OGQ0ZjFhNDU1ZjQ5Mjk4NTQxMg=='),
-  VERSION:'6.6',
+  VERSION:'6.7',
   DEV:'Safarali Group',
   MODELS:[
     {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢',cap:[]},
@@ -1392,7 +1439,93 @@ function initAuth(){
   });
 }
 
+// ===== YANDEX ADS =====
+// Замените на ваши ID от Яндекс Рекламы (partner.yandex.ru)
+const YANDEX={
+  BLOCK_ID:'R-A-XXXXX-Y',          // ID рекламного блока для баннеров
+  INTERSTITIAL_ID:'R-A-XXXXX-Y',   // ID блока для межстраничной рекламы
+  // Для тестирования раскомментируйте:
+  //BLOCK_ID:'demo-banner-yandex',
+  //INTERSTITIAL_ID:'demo-interstitial-yandex',
+};
+let yandexLoaded=false;
+
+function loadYandexAds(){
+  if(yandexLoaded||document.getElementById('yandexAdsScript'))return;
+  const s=document.createElement('script');
+  s.id='yandexAdsScript';
+  s.async=true;
+  s.src='https://yandex.ru/ads/system/context.js';
+  document.head.appendChild(s);
+  yandexLoaded=true;
+  window.yandexContextAsyncCallbacks=window.yandexContextAsyncCallbacks||[];
+  log('ADS','Yandex context.js loaded');
+}
+
+function renderBannerAd(containerId){
+  if(!yandexLoaded){loadYandexAds()}
+  window.yandexContextAsyncCallbacks=window.yandexContextAsyncCallbacks||[];
+  window.yandexContextAsyncCallbacks.push(function(){
+    try{
+      Ya.Context.AdvManager.render({
+        blockId:YANDEX.BLOCK_ID,
+        renderTo:containerId,
+        async:true
+      });
+    }catch(e){log('ERR','Banner render error: '+e.message)}
+  });
+}
+
+function showInterstitialAd(callback){
+  if(!yandexLoaded){loadYandexAds()}
+  // Create overlay
+  let overlay=document.getElementById('interstitialOverlay');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='interstitialOverlay';
+    overlay.innerHTML=`
+      <div class="interstitial-content">
+        <div class="interstitial-ad" id="interstitialAdContainer"></div>
+        <button class="interstitial-close" id="interstitialClose">✕</button>
+      </div>`;
+    document.body.appendChild(overlay);
+  }
+  overlay.style.display='flex';
+  log('ADS','Interstitial shown');
+
+  // Render ad
+  window.yandexContextAsyncCallbacks=window.yandexContextAsyncCallbacks||[];
+  window.yandexContextAsyncCallbacks.push(function(){
+    try{
+      Ya.Context.AdvManager.render({
+        blockId:YANDEX.INTERSTITIAL_ID,
+        renderTo:'interstitialAdContainer',
+        async:true
+      });
+    }catch(e){log('ERR','Interstitial render error: '+e.message)}
+  });
+
+  // Close button (after 5 sec or manual)
+  const closeBtn=document.getElementById('interstitialClose');
+  closeBtn.style.display='none';
+  setTimeout(()=>{closeBtn.style.display='flex'},5000);
+  closeBtn.onclick=()=>{
+    overlay.style.display='none';
+    log('ADS','Interstitial closed');
+    if(callback)callback();
+  };
+  // Auto-close after 30 sec
+  setTimeout(()=>{
+    if(overlay.style.display==='flex'){
+      overlay.style.display='none';
+      if(callback)callback();
+    }
+  },30000);
+}
+
 // ===== LIGHTBOX =====
+// ===== AD CALLBACK =====
+// (handled by Yandex JS SDK directly)
 function openLightbox(el){
   const src=el.getAttribute('data-src');
   if(!src)return;
@@ -1465,6 +1598,10 @@ function saveCurrent(){if(S.curId&&S.chats[S.curId])S.chats[S.curId].msgs=S.msgs
 
 // ===== CHAT CRUD =====
 function createChat(title){
+  // Show interstitial ad on new chat
+  showInterstitialAd(()=>doCreateChat(title));
+}
+function doCreateChat(title){
   const id='c'+Date.now();
   S.chats[id]={id,title,msgs:[],ts:Date.now()};
   saveChats();switchChat(id);
@@ -1584,6 +1721,18 @@ function renderMessages(){
     }
     row.appendChild(bub);
     mc.appendChild(row);
+
+    // Ad banner between messages (after every 2nd message)
+    if((i+1)%2===0&&i<S.msgs.length-1){
+      const slotNum=Math.floor((i+1)/2);
+      const adSlot=document.createElement('div');
+      adSlot.className='ad-banner-slot';
+      adSlot.id='ad-slot-'+slotNum;
+      adSlot.innerHTML='<div class="ad-label">Реклама</div><div class="ad-placeholder" id="adContainer-'+slotNum+'"></div>';
+      mc.appendChild(adSlot);
+      // Render Yandex banner
+      setTimeout(()=>renderBannerAd('adContainer-'+slotNum),300+slotNum*200);
+    }
   });
   mc.scrollTop=mc.scrollHeight;
 }
@@ -2063,6 +2212,8 @@ function init(){
   initAuth();
   // Show auth if not logged in
   if(!isLoggedIn())showAuth();else hideAuth();
+  // Load Yandex ads
+  loadYandexAds();
   console.log('🚀 S AI v'+CFG.VERSION+' ready');
   log('SYS','S AI v'+CFG.VERSION+' initialized');
 }
