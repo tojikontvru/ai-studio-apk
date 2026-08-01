@@ -74,6 +74,34 @@ a{color:var(--accent2);text-decoration:none}
 }
 .settings-btn:hover{color:var(--text);border-color:var(--accent)}
 .settings-btn:active{transform:scale(.92)}
+.log-btn{
+  width:36px;height:36px;border-radius:10px;background:transparent;border:1px solid var(--border2);
+  color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:15px;transition:all .2s;flex-shrink:0;
+}
+.log-btn:hover{color:var(--text);border-color:var(--accent)}
+.log-btn:active{transform:scale(.92)}
+.log-btn.active{background:rgba(99,102,241,.12);color:var(--accent2);border-color:var(--accent)}
+
+/* ===== LOG PANEL ===== */
+.log-panel{
+  position:fixed;top:0;right:0;bottom:0;width:340px;background:var(--bg2);z-index:500;
+  transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;border-left:1px solid var(--border);
+  box-shadow:-4px 0 24px rgba(0,0,0,.4);
+}
+.log-panel.open{transform:translateX(0)}
+.log-panel .lp-head{
+  padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  font-size:14px;font-weight:600;color:var(--text);
+}
+.log-panel .lp-head .lp-close{
+  margin-left:auto;width:28px;height:28px;border-radius:6px;background:var(--bg3);border:none;
+  color:var(--text3);font-size:14px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;
+}
+.log-panel .lp-body{flex:1;overflow-y:auto;padding:8px 12px;font-size:11px;color:var(--text2)}
+@media(max-width:480px){.log-panel{width:100%}}
 
 @media(max-width:768px){
   .header .menu-btn{display:flex}
@@ -801,6 +829,37 @@ a{color:var(--accent2);text-decoration:none}
   .msg-bubble{border-width:0.5px}
 }
 
+/* --- Log panel --- */
+.log-panel{
+  position:fixed;top:52px;right:0;width:360px;max-width:100vw;max-height:70vh;
+  background:var(--bg1);border:1px solid var(--border2);border-radius:12px 0 0 12px;
+  box-shadow:-4px 0 24px rgba(0,0,0,.5);z-index:900;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .3s ease;
+}
+.log-panel.show{transform:translateX(0)}
+.lp-head{
+  display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  border-bottom:1px solid var(--border2);font-size:13px;font-weight:600;color:var(--text);
+  flex-shrink:0;
+}
+.lp-close{
+  background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;
+  padding:2px 6px;border-radius:6px;
+}
+.lp-close:hover{background:var(--bg3);color:var(--text)}
+.lp-body{
+  flex:1;overflow-y:auto;padding:8px;font-family:'SF Mono',Consolas,monospace;
+  font-size:11px;line-height:1.6;max-height:calc(70vh - 40px);
+}
+.lp-entry{padding:4px 8px;border-radius:6px;margin-bottom:4px;word-break:break-all}
+.lp-entry.API{background:rgba(99,102,241,.08);color:var(--accent2)}
+.lp-entry.MODEL{background:rgba(59,130,246,.08);color:#60a5fa}
+.lp-entry.ERR{background:rgba(239,68,68,.08);color:#f87171}
+.lp-entry.FILE{background:rgba(16,185,129,.08);color:#34d399}
+.lp-entry.SYS{background:var(--bg3);color:var(--text3)}
+.lp-ts{color:var(--text3);margin-right:6px}
+.lp-type{font-weight:700;margin-right:4px}
+
 /* --- Reduced motion (accessibility) --- */
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
@@ -839,7 +898,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v6.2</span>
+    <span class="ver">v6.3</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -847,8 +906,15 @@ a{color:var(--accent2);text-decoration:none}
     <span style="color:#22c55e;font-size:10px;background:rgba(34,197,94,.15);padding:2px 5px;border-radius:4px;font-weight:600">FREE</span>
     <span class="arrow">▾</span>
   </div>
+  <button class="log-btn" id="logBtn" aria-label="Мониторинг">📋</button>
   <button class="settings-btn" id="settingsBtn" aria-label="Настройки">⚙</button>
 </header>
+
+<!-- LOG PANEL -->
+<div class="log-panel" id="logPanel">
+  <div class="lp-head"><span>📋 Мониторинг</span><button class="lp-close" id="logClose">✕</button></div>
+  <div class="lp-body" id="logList"></div>
+</div>
 
 <!-- MAIN -->
 <section class="chat-wrap" id="chatWrap">
@@ -907,7 +973,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.2</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.3</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -924,6 +990,15 @@ a{color:var(--accent2);text-decoration:none}
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<!-- LOG PANEL -->
+<div class="log-panel" id="logPanel">
+  <div class="lp-head">
+    <span>📋 Мониторинг</span>
+    <button class="lp-close" id="logClose">✕</button>
+  </div>
+  <div class="lp-body" id="logList"></div>
+</div>
+
 <!-- HIDDEN FILE INPUT -->
 <input type="file" id="fileInputImage" accept="image/*" style="display:none"/>
 <input type="file" id="fileInputVideo" accept="video/mp4,video/webm,video/quicktime" style="display:none"/>
@@ -934,30 +1009,49 @@ a{color:var(--accent2);text-decoration:none}
 const CFG={
   API:'https://openrouter.ai/api/v1/chat/completions',
   KEY:atob('c2stb3ItdjEtMzc5MGY2YTdjMmFhMjNmNzc3NDE5YTFlOWI2NTdmYzc1MTE2NTVmMzQ3MGQ0OGQ0ZjFhNDU1ZjQ5Mjk4NTQxMg=='),
-  VERSION:'6.2',
+  VERSION:'6.3',
   DEV:'Safarali Group',
   MODELS:[
-    {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢'},
-    {id:'nvidia/nemotron-3-super-120b-a12b:free',n:'Nemotron 3 Super 120B',d:'NVIDIA · 120B · Гибридный MoE · 262K ctx',icon:'🟢'},
-    {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',n:'Nemotron 3 Nano Omni',d:'NVIDIA · 30B · Мультимодальный · 🔇🖼🎬',icon:'🟢'},
-    {id:'nvidia/nemotron-3-nano-30b-a3b:free',n:'Nemotron 3 Nano 30B',d:'NVIDIA · 30B · Компактный MoE · 256K ctx',icon:'🟢'},
-    {id:'nvidia/nemotron-nano-12b-v2-vl:free',n:'Nemotron Nano 12B VL',d:'NVIDIA · 12B · Vision+Video · 128K ctx',icon:'🟢'},
-    {id:'nvidia/nemotron-nano-9b-v2:free',n:'Nemotron Nano 9B V2',d:'NVIDIA · 9B · Быстрый · 128K ctx',icon:'🟢'},
-    {id:'nvidia/nemotron-3.5-content-safety:free',n:'Nemotron 3.5 Safety',d:'NVIDIA · 4B · Мультимодальный · Модерация',icon:'🛡'},
-    {id:'google/gemma-4-31b-it:free',n:'Gemma 4 31B',d:'Google · 31B · Dense Multimodal · 🔇🖼🎬 · 262K',icon:'💎'},
-    {id:'google/gemma-4-26b-a4b-it:free',n:'Gemma 4 26B A4B',d:'Google · 26B · MoE Multimodal · 🔇🖼🎬 · 262K',icon:'💎'},
-    {id:'openai/gpt-oss-20b:free',n:'GPT OSS 20B',d:'OpenAI · 21B · Open-weights · 131K ctx',icon:'🤖'},
-    {id:'inclusionai/ling-3.0-flash:free',n:'Ling 3.0 Flash',d:'LingAI · 124B MoE · Быстрый · 262K ctx',icon:'⚡'},
-    {id:'cohere/north-mini-code:free',n:'North Mini Code',d:'Cohere · Кодинг · 256K ctx',icon:'💻'},
-    {id:'poolside/laguna-s-2.1:free',n:'Poolside Laguna S 2.1',d:'Poolside · Кодинг-агент · 262K ctx',icon:'🌊'},
-    {id:'poolside/laguna-xs-2.1:free',n:'Poolside Laguna XS 2.1',d:'Poolside · 33B MoE · Кодинг · 262K ctx',icon:'🌊'}
+    {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢',cap:[]},
+    {id:'nvidia/nemotron-3-super-120b-a12b:free',n:'Nemotron 3 Super 120B',d:'NVIDIA · 120B · Гибридный MoE · 262K ctx',icon:'🟢',cap:[]},
+    {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',n:'Nemotron 3 Nano Omni',d:'NVIDIA · 30B · Мультимодальный · 🔇🖼🎬',icon:'🟢',cap:['img','video','audio']},
+    {id:'nvidia/nemotron-3-nano-30b-a3b:free',n:'Nemotron 3 Nano 30B',d:'NVIDIA · 30B · Компактный MoE · 256K ctx',icon:'🟢',cap:[]},
+    {id:'nvidia/nemotron-nano-12b-v2-vl:free',n:'Nemotron Nano 12B VL',d:'NVIDIA · 12B · Vision+Video · 128K ctx',icon:'🟢',cap:['img','video']},
+    {id:'nvidia/nemotron-nano-9b-v2:free',n:'Nemotron Nano 9B V2',d:'NVIDIA · 9B · Быстрый · 128K ctx',icon:'🟢',cap:[]},
+    {id:'nvidia/nemotron-3.5-content-safety:free',n:'Nemotron 3.5 Safety',d:'NVIDIA · 4B · Мультимодальный · Модерация',icon:'🛡',cap:['img']},
+    {id:'google/gemma-4-31b-it:free',n:'Gemma 4 31B',d:'Google · 31B · Dense Multimodal · 🔇🖼🎬 · 262K',icon:'💎',cap:['img','video','audio']},
+    {id:'google/gemma-4-26b-a4b-it:free',n:'Gemma 4 26B A4B',d:'Google · 26B · MoE Multimodal · 🔇🖼🎬 · 262K',icon:'💎',cap:['img','video','audio']},
+    {id:'openai/gpt-oss-20b:free',n:'GPT OSS 20B',d:'OpenAI · 21B · Open-weights · 131K ctx',icon:'🤖',cap:[]},
+    {id:'inclusionai/ling-3.0-flash:free',n:'Ling 3.0 Flash',d:'LingAI · 124B MoE · Быстрый · 262K ctx',icon:'⚡',cap:[]},
+    {id:'cohere/north-mini-code:free',n:'North Mini Code',d:'Cohere · Кодинг · 256K ctx',icon:'💻',cap:[]},
+    {id:'poolside/laguna-s-2.1:free',n:'Poolside Laguna S 2.1',d:'Poolside · Кодинг-агент · 262K ctx',icon:'🌊',cap:[]},
+    {id:'poolside/laguna-xs-2.1:free',n:'Poolside Laguna XS 2.1',d:'Poolside · 33B MoE · Кодинг · 262K ctx',icon:'🌊',cap:[]}
   ],
-  VISION_IDS:['google/gemma-4-31b-it:free','google/gemma-4-26b-a4b-it:free','nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free','nvidia/nemotron-nano-12b-v2-vl:free','nvidia/nemotron-3.5-content-safety:free'],
+  // Vision модели — упорядочены от самой надёжной к менее
+  VISION_MODELS:['google/gemma-4-26b-a4b-it:free','google/gemma-4-31b-it:free','nvidia/nemotron-nano-12b-v2-vl:free','nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free'],
   SUGGESTIONS:['Что ты умеешь?','Объясни квантовую физику','Напиши стих о технологиях','План на день','Факт о космосе','Идея для проекта']
 };
 
 // ===== STATE =====
 const S={chats:{},curId:null,msgs:[],model:CFG.MODELS[0].id,theme:'dark',loading:false,abort:null,img:null,video:null,file:null,fileName:'',fileSize:0};
+
+// ===== LOG SYSTEM =====
+const LOGS=[];
+function log(type,msg,data){
+  const entry={ts:new Date().toISOString(),type,msg,data};
+  LOGS.push(entry);
+  if(LOGS.length>200)LOGS.shift();
+  console.log(`[S-AI ${type}]`,msg,data||'');
+}
+function renderLogs(){
+  const el=document.getElementById('logList');
+  if(!el)return;
+  el.innerHTML=LOGS.slice(-50).reverse().map(l=>{
+    const time=l.ts.slice(11,19);
+    return`<div class="lp-entry ${l.type}"><span class="lp-ts">${time}</span><span class="lp-type">${l.type}</span>${esc(l.msg)}${l.data?' '+esc(typeof l.data==='string'?l.data:JSON.stringify(l.data).slice(0,200)):''}</div>`;
+  }).join('');
+  el.scrollTop=0;
+}
 
 // ===== LIGHTBOX =====
 function openLightbox(el){
@@ -1185,12 +1279,19 @@ function checkSendReady(){
 }
 
 // ===== API =====
-function getModelId(){
+function getModelId(hasImg,hasVideo){
   // Автоматический выбор модели по типу вложения
-  if(S.img||S.video){
-    const visionModels=['google/gemma-4-26b-a4b-it:free','google/gemma-4-31b-it:free','nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free','nvidia/nemotron-nano-12b-v2-vl:free'];
-    if(visionModels.includes(S.model))return S.model;
-    return visionModels[0]; // Gemma 4 26B по умолчанию (надёжнее 31B)
+  if(hasImg||hasVideo){
+    log('MODEL','Vision requested, selecting model','img='+hasImg+' video='+hasVideo+' current='+S.model);
+    // Если текущая модель поддерживает vision — оставляем
+    const cur=CFG.MODELS.find(m=>m.id===S.model);
+    if(cur&&cur.cap&&(cur.cap.includes('img')||cur.cap.includes('video'))){
+      log('MODEL','Current model supports vision: '+cur.n);
+      return S.model;
+    }
+    // Иначе — лучшая vision модель по умолчанию
+    log('MODEL','Auto-switch to: '+CFG.VISION_MODELS[0]);
+    return CFG.VISION_MODELS[0];
   }
   return S.model;
 }
@@ -1281,7 +1382,10 @@ async function sendMessage(){
     const savedImg=attImg;const savedVideo=attVideo;const savedFile=attFile;
     // Временно возвращаем вложения для API + выбор модели
     S.img=savedImg;S.video=savedVideo;S.file=savedFile;S.fileName=attFileName;S.fileSize=attFileSize;
-    const model=getModelId();
+    const hasImg=!!savedImg, hasVideo=!!savedVideo;
+    log('API','Sending message','model='+S.model+' hasImg='+hasImg+' hasVideo='+hasVideo+' text='+text.slice(0,50));
+    const model=getModelId(hasImg,hasVideo);
+    log('MODEL','Selected model: '+model);
     const hist=getApiHistory();
     const userMsgs=buildApiMessages(text);
     const modelInfo=CFG.MODELS.find(m=>m.id===model);
@@ -1291,11 +1395,11 @@ async function sendMessage(){
 
     S.abort=new AbortController();
     const key=CFG.KEY||'';
-    const visionModels=['google/gemma-4-26b-a4b-it:free','google/gemma-4-31b-it:free','nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free','nvidia/nemotron-nano-12b-v2-vl:free'];
     let currentModel=model;
     let lastErr=null;
 
     for(let attempt=0;attempt<3;attempt++){
+      log('API','Request attempt '+(attempt+1)+' model='+currentModel);
       const res=await fetch(CFG.API,{
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'HTTP-Referer':location.origin},
@@ -1305,6 +1409,7 @@ async function sendMessage(){
       if(res.ok){
         const data=await res.json();
         const reply=data.choices?.[0]?.message?.content||'Нет ответа от модели';
+        log('API','Response OK','model='+currentModel+' chars='+reply.length);
         const last=S.msgs[S.msgs.length-1];
         if(last&&last.loading){last.content=reply;last.loading=false;last.ts=Date.now()}
         saveCurrent();renderMessages();
@@ -1314,9 +1419,11 @@ async function sendMessage(){
       // Ошибка — пробуем другую vision-модель
       const errText=await res.text();
       try{const e=JSON.parse(errText);lastErr=e.error?.message||('Ошибка '+res.status)}catch(x){lastErr='Ошибка '+res.status}
-      const nextIdx=visionModels.indexOf(currentModel)+1;
-      if(nextIdx<visionModels.length&&(res.status===400||res.status===404)){
-        currentModel=visionModels[nextIdx];
+      log('ERR','API error '+res.status,'model='+currentModel+' '+lastErr);
+      const nextIdx=CFG.VISION_MODELS.indexOf(currentModel)+1;
+      if(nextIdx<CFG.VISION_MODELS.length&&(res.status===400||res.status===404)){
+        currentModel=CFG.VISION_MODELS[nextIdx];
+        log('MODEL','Retry fallback → '+currentModel);
         toast('⚠️ Переключаю модель → '+CFG.MODELS.find(m=>m.id===currentModel)?.n);
         continue;
       }
@@ -1325,10 +1432,12 @@ async function sendMessage(){
     throw new Error(lastErr||'Ошибка API');
   }catch(err){
     if(err.name==='AbortError'){
+      log('API','Request aborted');
       const last=S.msgs[S.msgs.length-1];
       if(last&&last.loading){last.content='[Прервано]';last.loading=false}
       saveCurrent();renderMessages();
     }else{
+      log('ERR','Send error: '+err.message);
       const last=S.msgs[S.msgs.length-1];
       if(last&&last.loading){last.content='⚠️ '+err.message;last.loading=false}
       saveCurrent();renderMessages();toast(err.message);
@@ -1452,6 +1561,19 @@ function bindEvents(){
   $('settingsSave').addEventListener('click',saveSettingsUI);
   $('settingsModal').addEventListener('click',e=>{if(e.target===$('settingsModal'))closeSettings()});
 
+  // Log panel
+  $('logBtn').addEventListener('click',()=>{
+    const panel=$('logPanel');
+    const isOpen=panel.classList.contains('show');
+    panel.classList.toggle('show');
+    $('logBtn').classList.toggle('active');
+    if(!isOpen){renderLogs();log('SYS','Log panel opened')}
+  });
+  $('logClose').addEventListener('click',()=>{
+    $('logPanel').classList.remove('show');
+    $('logBtn').classList.remove('active');
+  });
+
   // Click input area focuses
   $('inputBox').addEventListener('click',e=>{if(e.target!==inp)inp.focus()});
 
@@ -1496,6 +1618,7 @@ function showFilePreview(name,size){
 
 function handleImage(file){
   try{
+    log('FILE','Image selected: '+file.name,'size='+formatSize(file.size));
     const reader=new FileReader();
     reader.onload=()=>{
       const img=new Image();
@@ -1520,6 +1643,7 @@ function handleImage(file){
 
 function handleVideo(file){
   try{
+    log('FILE','Video selected: '+file.name,'size='+formatSize(file.size));
     const reader=new FileReader();
     reader.onload=()=>{
       S.video=reader.result;
@@ -1535,6 +1659,7 @@ function handleVideo(file){
 
 function handleFile(file){
   try{
+    log('FILE','File selected: '+file.name,'size='+formatSize(file.size));
     const sizeMB=file.size/(1024*1024);
     if(sizeMB>2){toast('Файл слишком большой (макс 2 МБ)');return}
     const reader=new FileReader();
@@ -1569,6 +1694,7 @@ function init(){
   bindEvents();startFocusWatchdog();
   checkSendReady();
   console.log('🚀 S AI v'+CFG.VERSION+' ready');
+  log('SYS','S AI v'+CFG.VERSION+' initialized');
 }
 
 function boot(){try{init()}catch(e){console.error('Init:',e);setTimeout(boot,500)}}
