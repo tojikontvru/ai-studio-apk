@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#101828"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="description" content="S AI — бесплатный AI-чат с 23 моделями"/>
+<title>S AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0b0f1a;--bg2:#111827;--bg3:#1a2236;--bg4:#1f2937;
+  --text:#f0f4ff;--text2:#a0aec0;--text3:#6b7a94;
+  --accent:#6366f1;--accent2:#818cf8;--accent3:#4f46e5;
+  --border:#1e293b;--border2:#2d3a50;
+  --user-bg:linear-gradient(135deg,#6366f1,#8b5cf6);
+  --ai-bg:#141c2e;
+  --radius:12px;--radius-lg:18px;
+  --shadow:0 4px 24px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;-webkit-text-size-adjust:100%}
+body{font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100dvh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:10px}
+::-webkit-scrollbar-track{background:transparent}
+::selection{background:rgba(99,102,241,.3);color:#fff}
+textarea,input,button{font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+a{color:var(--accent2);text-decoration:none}
+
+/* ===== HEADER ===== */
+.header{
+  height:54px;background:rgba(11,15,26,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;
+  flex-shrink:0;z-index:100;position:relative;
+}
+.header .menu-btn{
+  width:36px;height:36px;border-radius:10px;background:var(--bg3);border:none;color:var(--text2);
+  display:none;align-items:center;justify-content:center;cursor:pointer;font-size:16px;
+  transition:all .2s;flex-shrink:0;
+}
+.header .menu-btn:active{transform:scale(.92);background:var(--bg4)}
+.header .logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.header .logo .icon{
+  width:32px;height:32px;border-radius:10px;background:var(--user-bg);display:flex;
+  align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:700;
+}
+.header .logo .name{font-weight:700;font-size:16px;color:var(--text);letter-spacing:-.3px}
+.header .logo .ver{font-size:11px;color:var(--text3);font-weight:500;margin-left:2px}
+
+.model-pill{
+  margin-left:auto;display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:10px;
+  padding:6px 12px;cursor:pointer;transition:all .2s;max-width:200px;
+}
+.model-pill:hover{border-color:var(--accent);background:var(--bg4)}
+.model-pill:active{transform:scale(.97)}
+.model-pill .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0}
+.model-pill .mname{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.model-pill .arrow{color:var(--text3);font-size:10px;flex-shrink:0}
+
+.settings-btn{
+  width:36px;height:36px;border-radius:10px;background:transparent;border:1px solid var(--border2);
+  color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:15px;transition:all .2s;flex-shrink:0;
+}
+.settings-btn:hover{color:var(--text);border-color:var(--accent)}
+.settings-btn:active{transform:scale(.92)}
+
+@media(max-width:768px){
+  .header .menu-btn{display:flex}
+  .header .logo .ver{display:none}
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;display:none;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.sidebar-overlay.show{display:block}
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:280px;background:var(--bg2);z-index:200;
+  transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;border-right:1px solid var(--border);
+}
+.sidebar.open{transform:translateX(0)}
+.sidebar .s-head{
+  padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;
+}
+.sidebar .s-head .s-title{font-weight:700;font-size:15px;color:var(--text);flex:1}
+.sidebar .s-head .s-close{
+  width:32px;height:32px;border-radius:8px;background:transparent;border:none;
+  color:var(--text3);font-size:18px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;transition:all .2s;
+}
+.sidebar .s-head .s-close:hover{color:var(--text);background:var(--bg3)}
+.sidebar .new-chat{
+  margin:12px 16px;padding:10px;border-radius:var(--radius);background:var(--user-bg);
+  border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;gap:8px;transition:all .2s;
+}
+.sidebar .new-chat:active{transform:scale(.97);opacity:.9}
+.sidebar .chat-list{flex:1;overflow-y:auto;padding:8px}
+.sidebar .chat-item{
+  padding:10px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;
+  gap:10px;transition:all .15s;margin-bottom:2px;
+}
+.sidebar .chat-item:hover{background:var(--bg3)}
+.sidebar .chat-item.active{background:rgba(99,102,241,.12)}
+.sidebar .chat-item .ci-icon{
+  width:32px;height:32px;border-radius:8px;background:var(--bg4);display:flex;
+  align-items:center;justify-content:center;font-size:14px;color:var(--accent2);flex-shrink:0;
+}
+.sidebar .chat-item .ci-text{flex:1;min-width:0}
+.sidebar .chat-item .ci-title{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar .chat-item .ci-time{font-size:11px;color:var(--text3);margin-top:2px}
+.sidebar .chat-item .ci-del{
+  width:28px;height:28px;border-radius:6px;background:transparent;border:none;
+  color:var(--text3);font-size:12px;cursor:pointer;display:none;align-items:center;
+  justify-content:center;transition:all .15s;flex-shrink:0;
+}
+.sidebar .chat-item:hover .ci-del{display:flex}
+.sidebar .chat-item .ci-del:hover{color:#ef4444;background:rgba(239,68,68,.1)}
+.sidebar .s-empty{text-align:center;padding:40px 16px;color:var(--text3);font-size:13px;line-height:1.6}
+.sidebar .s-footer{padding:12px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);text-align:center}
+
+@media(min-width:769px){
+  .sidebar{position:relative;transform:none;transition:none;width:260px}
+  .sidebar-overlay{display:none!important}
+}
+
+/* ===== WELCOME ===== */
+.welcome{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;text-align:center;gap:20px;
+}
+.welcome .w-icon{
+  width:80px;height:80px;border-radius:24px;background:var(--user-bg);display:flex;
+  align-items:center;justify-content:center;font-size:36px;color:#fff;
+  box-shadow:0 8px 32px rgba(99,102,241,.3);animation:float 3s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.welcome h1{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-.5px}
+.welcome p{font-size:15px;color:var(--text2);max-width:400px;line-height:1.6}
+.welcome .features{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.welcome .feat{
+  display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;
+  background:var(--bg3);border:1px solid var(--border);font-size:13px;color:var(--text2);
+}
+.welcome .feat i{color:var(--accent2);font-size:14px}
+
+/* ===== CHAT AREA ===== */
+.chat-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
+.messages{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
+.msg-row{display:flex;gap:10px;max-width:760px;width:100%;margin:0 auto;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-row.user{flex-direction:row-reverse}
+.msg-avatar{
+  width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;margin-top:2px;
+}
+.msg-row.assistant .msg-avatar{background:var(--bg3);color:var(--accent2)}
+.msg-row.user .msg-avatar{background:var(--user-bg);color:#fff;font-size:13px}
+.msg-bubble{
+  padding:12px 16px;border-radius:var(--radius-lg);font-size:14.5px;line-height:1.65;
+  max-width:calc(100% - 50px);word-wrap:break-word;position:relative;
+}
+.msg-row.assistant .msg-bubble{background:var(--ai-bg);color:var(--text);border:1px solid var(--border)}
+.msg-row.user .msg-bubble{background:var(--user-bg);color:#fff;border-bottom-right-radius:4px}
+.msg-bubble .msg-time{font-size:10px;color:var(--text3);margin-top:6px;display:flex;align-items:center;gap:6px}
+.msg-row.user .msg-bubble .msg-time{color:rgba(255,255,255,.6);justify-content:flex-end}
+.msg-bubble .msg-actions{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.msg-bubble .msg-actions button{
+  background:transparent;border:1px solid var(--border2);color:var(--text3);
+  padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px;transition:all .15s;
+}
+.msg-bubble .msg-actions button:hover{border-color:var(--accent);color:var(--accent2)}
+.msg-bubble .msg-actions button:active{transform:scale(.95)}
+
+/* Typing indicator */
+.typing{display:flex;gap:4px;padding:4px 0}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--text3);animation:bounce 1.4s ease-in-out infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:scale(0);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* Markdown in messages */
+.msg-bubble pre{background:var(--bg);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0;font-size:13px;line-height:1.5}
+.msg-bubble code{font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:13px;background:var(--bg4);padding:2px 6px;border-radius:4px}
+.msg-bubble pre code{background:transparent;padding:0}
+.msg-bubble strong{font-weight:600;color:var(--text)}
+.msg-row.user .msg-bubble strong{color:#fff}
+.msg-bubble ul,.msg-bubble ol{padding-left:20px;margin:6px 0}
+.msg-bubble li{margin:3px 0}
+.msg-bubble h1,.msg-bubble h2,.msg-bubble h3{margin:10px 0 6px;font-weight:600}
+.msg-bubble h1{font-size:18px}
+.msg-bubble h2{font-size:16px}
+.msg-bubble h3{font-size:15px}
+.msg-bubble a{color:var(--accent2)}
+.msg-bubble img.img-attach{max-width:240px;max-height:200px;border-radius:10px;margin-bottom:8px;border:1px solid var(--border)}
+
+/* ===== INPUT AREA ===== */
+.input-wrap{
+  padding:12px 16px 16px;background:var(--bg);border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.input-box{
+  max-width:760px;margin:0 auto;display:flex;gap:10px;align-items:flex-end;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:16px;
+  padding:8px 8px 8px 16px;transition:border-color .2s;
+}
+.input-box:focus-within{border-color:var(--accent)}
+.input-box .attach-btn{
+  width:36px;height:36px;border-radius:10px;background:transparent;border:none;
+  color:var(--text3);font-size:16px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;transition:all .2s;flex-shrink:0;
+}
+.input-box .attach-btn:hover{color:var(--accent2)}
+.input-box .attach-btn:active{transform:scale(.9)}
+.input-box textarea{
+  flex:1;background:transparent;border:none;color:var(--text);font-size:15px;
+  resize:none;max-height:120px;min-height:24px;line-height:1.5;padding:6px 0;
+  outline:none;
+}
+.input-box textarea::placeholder{color:var(--text3)}
+.input-box .send-btn{
+  width:40px;height:40px;border-radius:12px;background:var(--user-bg);border:none;
+  color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;transition:all .2s;flex-shrink:0;opacity:.4;pointer-events:none;
+}
+.input-box .send-btn.ready{opacity:1;pointer-events:auto}
+.input-box .send-btn:active{transform:scale(.9)}
+.input-box .send-btn.stop{background:#ef4444;opacity:1;pointer-events:auto}
+.img-preview-bar{
+  max-width:760px;margin:0 auto 8px;display:flex;align-items:center;gap:8px;
+}
+.img-preview-bar img{width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.img-preview-bar .remove-img{
+  width:24px;height:24px;border-radius:50%;background:var(--bg4);border:none;
+  color:var(--text3);font-size:12px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;
+}
+
+@media(max-width:768px){
+  .messages{padding:16px 12px}
+  .input-wrap{padding:10px 12px 14px}
+  .input-box{padding:6px 6px 6px 12px}
+}
+
+/* ===== MODEL PICKER MODAL ===== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;
+  align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+.modal-overlay.show{display:flex}
+.modal-sheet{
+  background:var(--bg2);border:1px solid var(--border);border-radius:20px 20px 0 0;
+  width:100%;max-width:500px;max-height:80vh;display:flex;flex-direction:column;
+  animation:slideUp .3s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-sheet .ms-head{
+  padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  gap:10px;
+}
+.modal-sheet .ms-head h3{font-size:16px;font-weight:600;flex:1}
+.modal-sheet .ms-head .ms-close{
+  width:32px;height:32px;border-radius:8px;background:var(--bg3);border:none;
+  color:var(--text3);font-size:16px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;
+}
+.modal-sheet .ms-body{flex:1;overflow-y:auto;padding:12px}
+.model-option{
+  display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;
+  cursor:pointer;transition:all .15s;border:1px solid transparent;
+}
+.model-option:hover{background:var(--bg3)}
+.model-option.selected{background:rgba(99,102,241,.1);border-color:var(--accent)}
+.model-option .mo-icon{
+  width:36px;height:36px;border-radius:10px;background:var(--bg4);display:flex;
+  align-items:center;justify-content:center;font-size:16px;color:var(--accent2);flex-shrink:0;
+}
+.model-option .mo-info{flex:1;min-width:0}
+.model-option .mo-name{font-size:14px;font-weight:500;color:var(--text)}
+.model-option .mo-desc{font-size:12px;color:var(--text3);margin-top:2px}
+.model-option .mo-check{color:var(--accent2);font-size:16px;display:none}
+.model-option.selected .mo-check{display:block}
+.model-section{font-size:12px;font-weight:600;color:var(--text3);padding:8px 12px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ===== SETTINGS MODAL ===== */
+.settings-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;
+  align-items:center;justify-content:center;padding:16px;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+.settings-overlay.show{display:flex}
+.settings-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:20px;
+  width:100%;max-width:440px;max-height:85vh;display:flex;flex-direction:column;
+  overflow:hidden;animation:scaleIn .25s cubic-bezier(.4,0,.2,1);
+}
+@keyframes scaleIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.settings-card .sc-head{
+  padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  gap:10px;
+}
+.settings-card .sc-head h3{font-size:16px;font-weight:600;flex:1}
+.settings-card .sc-head .sc-close{
+  width:32px;height:32px;border-radius:8px;background:var(--bg3);border:none;
+  color:var(--text3);font-size:16px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;
+}
+.settings-card .sc-body{padding:16px 20px;overflow-y:auto;flex:1}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px}
+.field input,.field select{
+  width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);
+  border-radius:10px;padding:10px 14px;font-size:14px;transition:border-color .2s;outline:none;
+}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field .hint{font-size:12px;color:var(--text3);margin-top:4px}
+.app-info-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;
+  margin-top:8px;
+}
+.app-info-card .ai-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px}
+.app-info-card .ai-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
+.app-info-card .ai-label{color:var(--text3)}
+.app-info-card .ai-val{color:var(--text);font-weight:500}
+.settings-card .sc-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:10px}
+.settings-card .sc-foot .btn-save{
+  flex:1;padding:10px;border-radius:10px;background:var(--user-bg);border:none;
+  color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;
+}
+.settings-card .sc-foot .btn-save:active{transform:scale(.97)}
+.settings-card .sc-foot .btn-cancel{
+  padding:10px 16px;border-radius:10px;background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text2);font-size:14px;cursor:pointer;transition:all .2s;
+}
+
+/* ===== TOAST ===== */
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:var(--bg4);color:var(--text);border:1px solid var(--border2);
+  padding:8px 16px;border-radius:10px;font-size:13px;z-index:400;
+  opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;
+  box-shadow:var(--shadow);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:480px){
+  .welcome h1{font-size:22px}
+  .welcome .features{gap:8px}
+  .welcome .feat{padding:6px 10px;font-size:12px}
+  .msg-bubble{max-width:calc(100% - 42px)}
+  .input-box textarea{font-size:16px}
+}
+@media(min-width:1024px){
+  .messages{padding:24px 0}
+  .input-wrap{padding:12px 0 20px}
+}
+@media(orientation:landscape) and (max-height:500px){
+  .input-wrap{padding:8px 16px 10px}
+  .welcome{padding:12px}
+  .welcome .w-icon{width:60px;height:60px;border-radius:16px;font-size:28px}
+  .welcome h1{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <button class="menu-btn" id="menuBtn" aria-label="Меню">☰</button>
+  <div class="logo">
+    <div class="icon">S</div>
+    <span class="name">S AI</span>
+    <span class="ver">v5.1</span>
+  </div>
+  <div class="model-pill" id="modelPill">
+    <span class="dot"></span>
+    <span class="mname" id="modelPillName">Llama 4 Maverick</span>
+    <span class="arrow">▾</span>
+  </div>
+  <button class="settings-btn" id="settingsBtn" aria-label="Настройки">⚙</button>
+</header>
+
+<!-- SIDEBAR (mobile overlay + desktop inline) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="s-head">
+    <span class="s-title">Чаты</span>
+    <button class="s-close" id="sidebarClose">✕</button>
+  </div>
+  <button class="new-chat" id="newChatBtn">✦ Новый чат</button>
+  <div class="chat-list" id="chatList"></div>
+  <div class="s-footer">S AI by Safarali Group</div>
+</aside>
+
+<!-- MAIN -->
+<section class="chat-wrap" id="chatWrap">
+  <div class="messages" id="messages"></div>
+  <div class="input-wrap">
+    <div class="img-preview-bar" id="imgPreviewBar" style="display:none">
+      <img id="imgPreview" src="" alt="preview"/>
+      <button class="remove-img" id="removeImg">✕</button>
+    </div>
+    <div class="input-box" id="inputBox">
+      <button class="attach-btn" id="attachBtn" aria-label="Изображение">🖼</button>
+      <textarea id="msgInput" rows="1" placeholder="Напишите сообщение..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text"></textarea>
+      <button class="send-btn" id="sendBtn" aria-label="Отправить">➤</button>
+    </div>
+  </div>
+</section>
+
+<!-- MODEL PICKER MODAL -->
+<div class="modal-overlay" id="modelModal">
+  <div class="modal-sheet">
+    <div class="ms-head">
+      <h3>Выберите модель</h3>
+      <button class="ms-close" id="modelModalClose">✕</button>
+    </div>
+    <div class="ms-body" id="modelList"></div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="settings-overlay" id="settingsModal">
+  <div class="settings-card">
+    <div class="sc-head">
+      <h3>⚙ Настройки</h3>
+      <button class="sc-close" id="settingsClose">✕</button>
+    </div>
+    <div class="sc-body">
+      <div class="field">
+        <label>🔑 API Key (OpenRouter)</label>
+        <input type="password" id="apiKeyInput" placeholder="sk-or-v1-..." autocomplete="off"/>
+        <div class="hint">Введите ключ из <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a></div>
+      </div>
+      <div class="field">
+        <label>🎨 Тема оформления</label>
+        <select id="themeSelect">
+          <option value="dark">Тёмная</option>
+          <option value="light">Светлая</option>
+        </select>
+      </div>
+      <div class="app-info-card">
+        <div class="ai-name">📱 S AI by Safarali Group</div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">5.1</span></div>
+        <div class="ai-row"><span class="ai-label">Разработчик</span><span class="ai-val">Safarali Group</span></div>
+        <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">23 бесплатные + Vision</span></div>
+        <div class="ai-row"><span class="ai-label">Платформа</span><span class="ai-val">OpenRouter API</span></div>
+      </div>
+    </div>
+    <div class="sc-foot">
+      <button class="btn-cancel" id="settingsCancel">Отмена</button>
+      <button class="btn-save" id="settingsSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="fileInput" accept="image/*" style="display:none"/>
+
+<script>
+// ===== CONFIG =====
+const CFG={
+  API:'https://openrouter.ai/api/v1/chat/completions',
+  KEY:atob('c2stb3ItdjEtMzc5MGY2YTdjMmFhMjNmNzc3NDE5YTFlOWI2NTdmYzc1MTE2NTVmMzQ3MGQ0OGQ0ZjFhNDU1ZjQ5Mjk4NTQxMg=='),
+  VERSION:'5.1',
+  DEV:'Safarali Group',
+  MODELS:[
+    {id:'meta-llama/llama-4-maverick:free',n:'Llama 4 Maverick',d:'Meta · 400B · Быстрый',icon:'🦙'},
+    {id:'google/gemini-2.0-flash-exp:free',n:'Gemini 2.0 Flash',d:'Google · Мульти-модальный',icon:'✦'},
+    {id:'deepseek/deepseek-chat-v3-0324:free',n:'DeepSeek V3',d:'DeepSeek · Код и текст',icon:'🔍'},
+    {id:'qwen/qwen2.5-72b-instruct:free',n:'Qwen 2.5 72B',d:'Alibaba · Мощный',icon:'🧠'},
+    {id:'mistralai/mistral-small-3.1-24b-instruct:free',n:'Mistral Small 3.1',d:'Mistral · Баланс',icon:'🌊'},
+    {id:'google/gemini-2.0-flash-lite:free',n:'Gemini 2.0 Lite',d:'Google · Лёгкий и быстрый',icon:'⚡'},
+    {id:'mistralai/mistral-nemo:free',n:'Mistral Nemo',d:'Mistral · 12B',icon:'🌊'},
+    {id:'qwen/qwen2.5-32b-instruct:free',n:'Qwen 2.5 32B',d:'Alibaba · Средний',icon:'🧠'},
+    {id:'qwen/qwen2.5-14b-instruct:free',n:'Qwen 2.5 14B',d:'Alibaba · Компактный',icon:'🧠'},
+    {id:'mistralai/mistral-7b-instruct:free',n:'Mistral 7B',d:'Mistral · Быстрый',icon:'🌊'},
+    {id:'google/gemma-2-9b-it:free',n:'Gemma 2 9B',d:'Google · Лёгкий',icon:'💎'},
+    {id:'meta-llama/llama-3.2-3b-instruct:free',n:'Llama 3.2 3B',d:'Meta · Компактный',icon:'🦙'},
+    {id:'meta-llama/llama-3.2-1b-instruct:free',n:'Llama 3.2 1B',d:'Meta · Минимальный',icon:'🦙'},
+    {id:'huggingfaceh4/zephyr-7b-beta:free',n:'Zephyr 7B',d:'HuggingFace · Чат',icon:'🌬'},
+    {id:'nousresearch/nous-hermes-2-mixtral:free',n:'Nous Hermes 2',d:'Nous · Mixtral',icon:'🔮'},
+    {id:'openchat/openchat_3.5:free',n:'OpenChat 3.5',d:'OpenChat · Общий',icon:'💬'},
+    {id:'teknium/openhermes-2.5-mistral-7b:free',n:'OpenHermes 2.5',d:'Teknium · Mistral',icon:'🔥'},
+    {id:'gryphe/mythomist-7b:free',n:'MythoMist 7B',d:'Gryphe · Творческий',icon:'🎭'},
+    {id:'undi95/toppy-m-7b:free',n:'Toppy M 7B',d:'Undi95 · Универсальный',icon:'🎩'},
+    {id:'hf.co/Open-Orca/Mistral-7B-Open-Orca:free',n:'Mistral OpenOrca',d:'OpenOrca · Mistral',icon:'🐙'},
+    {id:'openai/gpt-oss-120b:free',n:'GPT OSS 120B',d:'OpenAI · Большой',icon:'🤖'},
+    {id:'openai/gpt-oss-20b:free',n:'GPT OSS 20B',d:'OpenAI · Быстрый',icon:'🤖'},
+    {id:'meta-llama/llama-guard-4-12b:free',n:'Llama Guard 4',d:'Meta · Модерация',icon:'🛡'}
+  ],
+  VISION_IDS:['meta-llama/llama-4-maverick:free','google/gemini-2.0-flash-exp:free','google/gemini-2.0-flash-lite:free','qwen/qwen2.5-72b-instruct:free','mistralai/mistral-small-3.1-24b-instruct:free','qwen/qwen2.5-32b-instruct:free','openai/gpt-oss-120b:free'],
+  SUGGESTIONS:['Что ты умеешь?','Объясни квантовую физику','Напиши стих о технологиях','План на день','Факт о космосе','Идея для проекта']
+};
+
+// ===== STATE =====
+const S={chats:{},curId:null,msgs:[],model:CFG.MODELS[0].id,theme:'dark',loading:false,abort:null,img:null};
+
+// ===== HELPERS =====
+const $=id=>document.getElementById(id);
+const esc=t=>(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const time=()=>new Date().toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)};
+
+function renderMd(text){
+  if(!text)return'';
+  let h=esc(text);
+  h=h.replace(/```([\s\S]*?)```/g,'<pre><code>$1</code></pre>');
+  h=h.replace(/`([^`]+)`/g,'<code>$1</code>');
+  h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  h=h.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  h=h.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  h=h.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+  h=h.replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  h=h.replace(/^[-*] (.+)$/gm,'<li>$1</li>');
+  h=h.replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>');
+  h=h.replace(/\n/g,'<br>');
+  return h;
+}
+
+// ===== PERSISTENCE =====
+function loadSettings(){
+  try{
+    const s=JSON.parse(localStorage.getItem('sai_set')||'{}');
+    if(s.model&&CFG.MODELS.some(m=>m.id===s.model))S.model=s.model;
+    S.theme=s.theme||'dark';
+    if(s.key)CFG.KEY=s.key;
+  }catch(e){}
+}
+function saveSettings(){
+  localStorage.setItem('sai_set',JSON.stringify({model:S.model,theme:S.theme,key:CFG.KEY}));
+}
+function loadChats(){
+  try{
+    const d=JSON.parse(localStorage.getItem('sai_chats')||'{}');
+    S.chats=d;
+    const ids=Object.keys(d);
+    S.curId=ids[0]||null;
+    S.msgs=S.curId?(d[S.curId].msgs||[]):[];
+  }catch(e){S.chats={};S.curId=null;S.msgs=[]}
+}
+function saveChats(){localStorage.setItem('sai_chats',JSON.stringify(S.chats))}
+function saveCurrent(){if(S.curId&&S.chats[S.curId])S.chats[S.curId].msgs=S.msgs;saveChats()}
+
+// ===== CHAT CRUD =====
+function createChat(title){
+  const id='c'+Date.now();
+  S.chats[id]={id,title,msgs:[],ts:Date.now()};
+  saveChats();switchChat(id);
+}
+function switchChat(id){
+  if(!S.chats[id])return;
+  S.curId=id;S.msgs=S.chats[id].msgs||[];
+  saveChats();renderChatList();renderMessages();closeSidebar();
+}
+function deleteChat(id){
+  delete S.chats[id];
+  if(S.curId===id){const ids=Object.keys(S.chats);S.curId=ids[0]||null;S.msgs=S.curId?(S.chats[S.curId].msgs||[]):[]}
+  saveChats();renderChatList();renderMessages();
+}
+
+// ===== RENDER =====
+function renderChatList(){
+  const list=$('chatList');list.innerHTML='';
+  const ids=Object.keys(S.chats).sort((a,b)=>(S.chats[b].ts||0)-(S.chats[a].ts||0));
+  if(!ids.length){list.innerHTML='<div class="s-empty">Пока нет чатов<br/>Нажмите «Новый чат» чтобы начать</div>';return}
+  ids.forEach(id=>{
+    const c=S.chats[id];
+    const d=document.createElement('div');
+    d.className='chat-item'+(id===S.curId?' active':'');
+    d.innerHTML=`<div class="ci-icon">💬</div><div class="ci-text"><div class="ci-title">${esc(c.title||'Новый чат')}</div><div class="ci-time">${new Date(c.ts||Date.now()).toLocaleDateString('ru')}</div></div><button class="ci-del" data-id="${id}">🗑</button>`;
+    d.addEventListener('click',e=>{if(!e.target.closest('.ci-del'))switchChat(id)});
+    d.querySelector('.ci-del').addEventListener('click',e=>{e.stopPropagation();deleteChat(id)});
+    list.appendChild(d);
+  });
+}
+
+function renderMessages(){
+  const mc=$('messages');mc.innerHTML='';
+  if(!S.msgs.length){
+    mc.innerHTML=`<div class="welcome"><div class="w-icon">✦</div><h1>Привет! Я S AI</h1><p>Задайте любой вопрос — я помогу с текстом, кодом, идеями и творческими задачами</p><div class="features"><div class="feat">🆓 23 бесплатные модели</div><div class="feat">🖼 Vision / изображения</div><div class="feat">💾 Чаты сохраняются</div></div></div>`;
+    renderSuggestions(mc);
+    return;
+  }
+  S.msgs.forEach((m,i)=>{
+    const row=document.createElement('div');
+    row.className='msg-row '+m.role;
+
+    const av=document.createElement('div');
+    av.className='msg-avatar';
+    av.innerHTML=m.role==='user'?'👤':'✦';
+    row.appendChild(av);
+
+    const bub=document.createElement('div');
+    bub.className='msg-bubble';
+
+    if(m.role==='assistant'&&(m.loading||!m.content)){
+      bub.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+    }else{
+      let content='';
+      if(m.img){content+=`<img class="img-attach" src="${m.img}" alt="image"/>`}
+      content+=renderMd(m.content||'');
+      bub.innerHTML=content;
+
+      const meta=document.createElement('div');
+      meta.className='msg-time';
+      meta.textContent=time();
+      bub.appendChild(meta);
+
+      if(m.role==='assistant'){
+        const actions=document.createElement('div');
+        actions.className='msg-actions';
+        actions.innerHTML=`<button data-c="${i}">📋 Копировать</button><button data-r="${i}">🔄 Заново</button><button data-e="1">📥 TXT</button>`;
+        actions.addEventListener('click',e=>{
+          const btn=e.target.closest('button');if(!btn)return;
+          if(btn.dataset.c!=null){
+            navigator.clipboard?.writeText(m.content).then(()=>toast('Скопировано!')).catch(()=>{});
+          }
+          if(btn.dataset.r!=null){
+            let ut='';
+            for(let j=i-1;j>=0;j--){if(S.msgs[j].role==='user'){ut=S.msgs[j].content||'';break}}
+            S.msgs.splice(i);saveCurrent();renderMessages();
+            const inp=$('msgInput');inp.value=ut;inp.focus();checkSendReady();
+          }
+          if(btn.dataset.e!=null){
+            const txt=S.msgs.map(x=>`[${x.role==='user'?'Вы':'AI'}]: ${x.content}`).join('\n\n');
+            const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+            const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='chat.txt';a.click();
+            toast('Экспорт завершён');
+          }
+        });
+        bub.appendChild(actions);
+      }
+    }
+    row.appendChild(bub);
+    mc.appendChild(row);
+  });
+  mc.scrollTop=mc.scrollHeight;
+}
+
+function renderSuggestions(parent){
+  const w=parent||$('messages');
+  let el=w.querySelector('.welcome-sugs');
+  if(!el){
+    el=document.createElement('div');
+    el.className='welcome-sugs';
+    el.style.cssText='display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:0 16px;margin-top:4px';
+    const welcomeDiv=w.querySelector('.welcome');
+    if(welcomeDiv)welcomeDiv.appendChild(el);
+  }
+  el.innerHTML='';
+  CFG.SUGGESTIONS.forEach(s=>{
+    const b=document.createElement('button');
+    b.style.cssText='background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:8px 14px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s';
+    b.textContent=s;
+    b.addEventListener('click',()=>{$('msgInput').value=s;checkSendReady();$('msgInput').focus()});
+    b.addEventListener('mouseenter',()=>{b.style.borderColor='var(--accent)';b.style.color='var(--text)'});
+    b.addEventListener('mouseleave',()=>{b.style.borderColor='var(--border)';b.style.color='var(--text2)'});
+    el.appendChild(b);
+  });
+}
+
+function checkSendReady(){
+  const btn=$('sendBtn');
+  const hasText=$('msgInput').value.trim().length>0;
+  const hasImg=!!S.img;
+  btn.classList.toggle('ready',hasText||hasImg);
+}
+
+// ===== API =====
+function getModelId(){
+  if(S.img&&CFG.VISION_IDS.includes(S.model))return S.model;
+  if(S.img)return CFG.MODELS[0].id;
+  return S.model;
+}
+
+function buildApiMessages(text){
+  if(S.img){
+    return[{role:'user',content:[{type:'text',text:text||'Что на этом изображении?'},{type:'image_url',image_url:{url:S.img,detail:'auto'}}]}];
+  }
+  return[{role:'user',content:text}];
+}
+
+function getApiHistory(){
+  const hist=[];
+  const recent=S.msgs.filter(m=>!m.loading).slice(-20);
+  for(const m of recent){
+    if(m.role==='assistant'&&m.content)hist.push({role:'assistant',content:m.content});
+    if(m.role==='user'&&m.content)hist.push({role:'user',content:m.content});
+  }
+  return hist;
+}
+
+async function sendMessage(){
+  if(S.loading){stopGeneration();return}
+  const inp=$('msgInput');
+  const text=inp.value.trim();
+  if(!text&&!S.img){inp.focus();return}
+  if(!S.curId)createChat('Новый чат');
+
+  // hide welcome
+  const w=$('messages').querySelector('.welcome');
+  if(w)w.remove();
+
+  const userMsg={role:'user',content:text,ts:Date.now()};
+  if(S.img){userMsg.img=S.img}
+  S.msgs.push(userMsg);
+  saveCurrent();
+
+  inp.value='';inp.style.height='auto';
+  S.img=null;
+  $('imgPreviewBar').style.display='none';
+  checkSendReady();
+  renderMessages();
+
+  S.loading=true;
+  const loadMsg={role:'assistant',content:'',loading:true,ts:Date.now()};
+  S.msgs.push(loadMsg);
+  renderMessages();
+
+  // auto-title
+  if(S.msgs.filter(m=>m.role==='user').length===1&&S.curId&&S.chats[S.curId]){
+    S.chats[S.curId].title=text.slice(0,40)+(text.length>40?'...':'');
+    saveChats();renderChatList();
+  }
+
+  try{
+    const model=getModelId();
+    const history=getApiHistory();
+    const userMsgs=buildApiMessages(text);
+    const messages=[...history.slice(0,-1),...userMsgs];
+
+    S.abort=new AbortController();
+    const key=CFG.KEY||'';
+    const res=await fetch(CFG.API,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'HTTP-Referer':location.origin},
+      body:JSON.stringify({model,messages,max_tokens:2048,temperature:0.7,top_p:0.9}),
+      signal:S.abort.signal
+    });
+    if(!res.ok){
+      const errText=await res.text();
+      let errMsg='Ошибка: '+res.status;
+      try{const e=JSON.parse(errText);errMsg=e.error?.message||errMsg}catch(x){}
+      throw new Error(errMsg);
+    }
+    const data=await res.json();
+    const reply=data.choices?.[0]?.message?.content||'Нет ответа от модели';
+
+    const last=S.msgs[S.msgs.length-1];
+    if(last&&last.loading){last.content=reply;last.loading=false;last.ts=Date.now()}
+    saveCurrent();renderMessages();
+    setTimeout(()=>$('msgInput').focus(),100);
+  }catch(err){
+    if(err.name==='AbortError'){
+      const last=S.msgs[S.msgs.length-1];
+      if(last&&last.loading){last.content='[Прервано]';last.loading=false}
+      saveCurrent();renderMessages();
+    }else{
+      const last=S.msgs[S.msgs.length-1];
+      if(last&&last.loading){last.content='⚠️ '+err.message;last.loading=false}
+      saveCurrent();renderMessages();toast(err.message);
+    }
+  }finally{
+    S.loading=false;S.abort=null;checkSendReady();
+    setTimeout(()=>$('msgInput').focus({preventScroll:true}),200);
+  }
+}
+
+function stopGeneration(){if(S.abort)S.abort.abort()}
+
+// ===== MODEL PICKER =====
+function renderModelList(){
+  const list=$('modelList');list.innerHTML='';
+  CFG.MODELS.forEach(m=>{
+    const d=document.createElement('div');
+    d.className='model-option'+(m.id===S.model?' selected':'');
+    d.innerHTML=`<div class="mo-icon">${m.icon}</div><div class="mo-info"><div class="mo-name">${m.n}</div><div class="mo-desc">${m.d}</div></div><div class="mo-check">✓</div>`;
+    d.addEventListener('click',()=>{
+      S.model=m.id;saveSettings();
+      $('modelPillName').textContent=m.n;
+      document.querySelectorAll('.model-option').forEach(x=>x.classList.remove('selected'));
+      d.classList.add('selected');
+      toast('Модель: '+m.n);
+      setTimeout(()=>closeModelModal(),200);
+    });
+    list.appendChild(d);
+  });
+}
+
+function openModelModal(){
+  renderModelList();$('modelModal').classList.add('show');
+}
+function closeModelModal(){$('modelModal').classList.remove('show')}
+
+// ===== SIDEBAR =====
+function openSidebar(){$('sidebar').classList.add('open');$('sidebarOverlay').classList.add('show')}
+function closeSidebar(){$('sidebar').classList.remove('open');$('sidebarOverlay').classList.remove('show')}
+
+// ===== SETTINGS =====
+function openSettings(){
+  $('apiKeyInput').value=CFG.KEY||'';
+  $('themeSelect').value=S.theme;
+  $('settingsModal').classList.add('show');
+}
+function closeSettings(){$('settingsModal').classList.remove('show')}
+function saveSettingsUI(){
+  const k=$('apiKeyInput').value.trim();
+  if(k)CFG.KEY=k;
+  S.theme=$('themeSelect').value;
+  applyTheme();saveSettings();closeSettings();toast('Настройки сохранены');
+}
+function applyTheme(){document.body.classList.toggle('light',S.theme==='light')}
+
+// ===== EVENT BINDING =====
+function bindEvents(){
+  // Menu
+  $('menuBtn').addEventListener('click',openSidebar);
+  $('sidebarOverlay').addEventListener('click',closeSidebar);
+  $('sidebarClose').addEventListener('click',closeSidebar);
+  $('newChatBtn').addEventListener('click',()=>createChat('Новый чат'));
+
+  // Send
+  $('sendBtn').addEventListener('click',sendMessage);
+  $('sendBtn').addEventListener('touchstart',e=>{e.preventDefault();sendMessage()});
+
+  // Input
+  const inp=$('msgInput');
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});
+  inp.addEventListener('input',function(){
+    this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';
+    checkSendReady();
+  });
+
+  // Attach
+  $('attachBtn').addEventListener('click',()=>$('fileInput').click());
+  $('fileInput').addEventListener('change',function(){
+    if(this.files[0])handleAttach(this.files[0]);
+    this.value='';
+  });
+
+  // Remove image
+  $('removeImg').addEventListener('click',()=>{S.img=null;$('imgPreviewBar').style.display='none';checkSendReady()});
+
+  // Model picker
+  $('modelPill').addEventListener('click',openModelModal);
+  $('modelModalClose').addEventListener('click',closeModelModal);
+  $('modelModal').addEventListener('click',e=>{if(e.target===$('modelModal'))closeModelModal()});
+
+  // Settings
+  $('settingsBtn').addEventListener('click',openSettings);
+  $('settingsClose').addEventListener('click',closeSettings);
+  $('settingsCancel').addEventListener('click',closeSettings);
+  $('settingsSave').addEventListener('click',saveSettingsUI);
+  $('settingsModal').addEventListener('click',e=>{if(e.target===$('settingsModal'))closeSettings()});
+
+  // Click input area focuses
+  $('inputBox').addEventListener('click',e=>{if(e.target!==inp)inp.focus()});
+
+  // Keyboard
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',()=>{
+      const h=window.visualViewport.height;
+      if(S.msgs.length){const mc=$('messages');setTimeout(()=>mc.scrollTop=mc.scrollHeight,100)}
+      if(!S.loading)$('msgInput').focus();
+    });
+  }
+
+  // Prevent zoom
+  document.addEventListener('touchstart',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+  if(/iPhone|iPad|iPod/.test(navigator.userAgent))document.addEventListener('gesturechange',e=>e.preventDefault());
+}
+
+async function handleAttach(file){
+  try{
+    const reader=new FileReader();
+    reader.onload=()=>{
+      S.img=reader.result;
+      $('imgPreview').src=S.img;
+      $('imgPreviewBar').style.display='flex';
+      checkSendReady();
+      toast('Изображение прикреплено');
+    };
+    reader.readAsDataURL(file);
+  }catch(e){toast('Ошибка загрузки')}
+}
+
+// ===== FOCUS WATCHDOG =====
+function startFocusWatchdog(){
+  setInterval(()=>{
+    if(document.activeElement===document.body&&!S.loading){
+      $('msgInput').focus({preventScroll:true});
+    }
+  },200);
+}
+
+// ===== INIT =====
+function init(){
+  loadSettings();applyTheme();
+  const m=CFG.MODELS.find(x=>x.id===S.model)||CFG.MODELS[0];
+  $('modelPillName').textContent=m.n;
+  loadChats();renderChatList();renderMessages();
+  bindEvents();startFocusWatchdog();
+  checkSendReady();
+  console.log('🚀 S AI v'+CFG.VERSION+' ready');
+}
+
+function boot(){try{init()}catch(e){console.error('Init:',e);setTimeout(boot,500)}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+</script>
+</body>
+</html>
