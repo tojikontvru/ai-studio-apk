@@ -380,11 +380,12 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v5.3</span>
+    <span class="ver">v5.4</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
     <span class="mname" id="modelPillName">Llama 4 Maverick</span>
+    <span style="color:#22c55e;font-size:10px;background:rgba(34,197,94,.15);padding:2px 5px;border-radius:4px;font-weight:600">FREE</span>
     <span class="arrow">▾</span>
   </div>
   <button class="settings-btn" id="settingsBtn" aria-label="Настройки">⚙</button>
@@ -451,7 +452,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">5.3</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">5.4</span></div>
         <div class="ai-row"><span class="ai-label">Разработчик</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">23 бесплатные + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Платформа</span><span class="ai-val">OpenRouter API</span></div>
@@ -593,7 +594,7 @@ function renderChatList(){
 function renderMessages(){
   const mc=$('messages');mc.innerHTML='';
   if(!S.msgs.length){
-    mc.innerHTML=`<div class="welcome"><div class="w-icon">✦</div><h1>Привет! Я S AI</h1><p>Задайте любой вопрос — я помогу с текстом, кодом, идеями и творческими задачами</p><div class="features"><div class="feat">🆓 23 бесплатные модели</div><div class="feat">🖼 Vision / изображения</div><div class="feat">💾 Чаты сохраняются</div><div class="feat">🔑 API подключён</div></div></div>`;
+    mc.innerHTML=`<div class="welcome"><div class="w-icon">✦</div><h1>Привет! Я S AI</h1><p>Задайте любой вопрос — я помогу с текстом, кодом, идеями и творческими задачами</p><div class="features"><div class="feat">🆓 23 FREE модели</div><div class="feat">🖼 Vision / изображения</div><div class="feat">💾 Чаты сохраняются</div><div class="feat">🔑 API подключён</div></div></div>`;
     renderSuggestions(mc);
     return;
   }
@@ -787,16 +788,23 @@ function stopGeneration(){if(S.abort)S.abort.abort()}
 // ===== MODEL PICKER =====
 function renderModelList(){
   const list=$('modelList');list.innerHTML='';
+  // Заголовок
+  const hdr=document.createElement('div');
+  hdr.className='model-section';
+  hdr.textContent='🆓 Все модели бесплатные (OpenRouter Free)';
+  hdr.style.cssText='font-size:14px;padding:8px 12px 12px;color:#22c55e;font-weight:600';
+  list.appendChild(hdr);
+
   CFG.MODELS.forEach(m=>{
     const d=document.createElement('div');
     d.className='model-option'+(m.id===S.model?' selected':'');
-    d.innerHTML=`<div class="mo-icon">${m.icon}</div><div class="mo-info"><div class="mo-name">${m.n}</div><div class="mo-desc">${m.d}</div></div><div class="mo-check">✓</div>`;
+    d.innerHTML=`<div class="mo-icon">${m.icon}</div><div class="mo-info"><div class="mo-name">${m.n} <span style="color:#22c55e;font-size:11px;background:rgba(34,197,94,.15);padding:2px 6px;border-radius:4px;margin-left:6px">FREE</span></div><div class="mo-desc">${m.d}</div></div><div class="mo-check">✓</div>`;
     d.addEventListener('click',()=>{
       S.model=m.id;saveSettings();
       $('modelPillName').textContent=m.n;
       document.querySelectorAll('.model-option').forEach(x=>x.classList.remove('selected'));
       d.classList.add('selected');
-      toast('Модель: '+m.n);
+      toast('✅ Модель: '+m.n+' (FREE)');
       setTimeout(()=>closeModelModal(),200);
     });
     list.appendChild(d);
