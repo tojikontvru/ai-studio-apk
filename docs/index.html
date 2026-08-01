@@ -152,15 +152,27 @@ a{color:var(--accent2);text-decoration:none}
 /* Profile in settings */
 .profile-card{
   background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;
-  margin-bottom:16px;
+  margin-bottom:16px;text-align:center;
 }
 .profile-avatar{
   width:56px;height:56px;border-radius:16px;background:var(--user-bg);display:flex;
   align-items:center;justify-content:center;font-size:24px;color:#fff;font-weight:700;
-  margin-bottom:12px;
+  margin-bottom:12px;margin-left:auto;margin-right:auto;
 }
 .profile-name{font-size:16px;font-weight:600;color:var(--text);margin-bottom:2px}
 .profile-email{font-size:13px;color:var(--text3)}
+.sub-badge{
+  display:inline-block;margin-top:8px;padding:5px 14px;border-radius:999px;
+  font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;
+  background:rgba(0,0,0,.25);color:#fff;border:1px solid rgba(255,255,255,.25);
+}
+.sub-badge.pro{background:linear-gradient(135deg,#f59e0b,#ef4444);border:none}
+.plan-btn{
+  width:100%;padding:12px;margin:6px 0;border-radius:12px;border:1px solid var(--border);
+  background:var(--bg3);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;
+}
+.plan-btn:hover{border-color:var(--accent);background:var(--bg2)}
+.modal-sub{font-size:13px;color:var(--text3);margin-bottom:12px}
 .btn-logout{
   width:100%;padding:11px;background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2);
   border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:12px;
@@ -1273,6 +1285,7 @@ a{color:var(--accent2);text-decoration:none}
         <div class="profile-avatar" id="profileAvatar">S</div>
         <div class="profile-name" id="profileName">Гость</div>
         <div class="profile-email" id="profileEmail">Не авторизован</div>
+        <div class="sub-badge" id="subStatus" onclick="hasPremium()?showPremiumDialog():showPremiumDialog()">FREE</div>
       </div>
       <button class="btn-logout" id="btnLogout" style="display:none">🚪 Выйти из аккаунта</button>
       <div class="field" style="display:none">
@@ -1289,7 +1302,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">8.0</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">8.2</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -1325,7 +1338,7 @@ a{color:var(--accent2);text-decoration:none}
 const CFG={
   API:'https://openrouter.ai/api/v1/chat/completions',
   KEY:atob('c2stb3ItdjEtOWQ4YTM3ZDQyNzMwYzdiOWI1MzU0OWI3YjVkZGE2OTkyNjg3NGZiNjNkNmVlYmE1ZWRiYTg4ZjdhM2Q4NDNjNQ=='),
-  VERSION:'8.1',
+  VERSION:'8.2',
   DEV:'Safarali Group',
   MODELS:[
     {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢',cap:[]},
@@ -1611,6 +1624,75 @@ function loadChats(){
 function saveChats(){localStorage.setItem('sai_chats',JSON.stringify(S.chats))}
 function saveCurrent(){if(S.curId&&S.chats[S.curId])S.chats[S.curId].msgs=S.msgs;saveChats()}
 
+// ===== ЛИМИТ 15 СООБЩЕНИЙ/ДЕНЬ + ПОДПИСКА =====
+const FREE_DAILY_LIMIT=15;
+function getTodayCount(){
+  try{
+    const d=JSON.parse(localStorage.getItem('sai_limit')||'{}');
+    const today=new Date().toISOString().slice(0,10);
+    return d.date===today?d.count||0:0;
+  }catch(e){return 0}
+}
+function incTodayCount(){
+  const today=new Date().toISOString().slice(0,10);
+  const c=getTodayCount()+1;
+  localStorage.setItem('sai_limit',JSON.stringify({date:today,count:c}));
+}
+function hasPremium(){
+  try{
+    const p=JSON.parse(localStorage.getItem('sai_premium')||'{}');
+    return p.until&&p.until>Date.now();
+  }catch(e){return false}
+}
+function activatePremium(days){
+  localStorage.setItem('sai_premium',JSON.stringify({until:Date.now()+days*86400000}));
+  updateSubUI();toast('🎉 S AI PRO активирован!');
+}
+function premiumDate(){
+  try{
+    const p=JSON.parse(localStorage.getItem('sai_premium')||'{}');
+    if(!p.until)return '';
+    return new Date(p.until).toLocaleDateString('ru-RU');
+  }catch(e){return ''}
+}
+function showPremiumDialog(reason){
+  const plans=['👑 PRO на 1 месяц — 199 ₽','👑 PRO на 3 месяца — 499 ₽ (выгодно)','👑 PRO навсегда — 1 499 ₽ (максимум выгоды)'];
+  const tpl=`<div class="modal-backdrop" id="premModal">
+    <div class="modal">
+      <h3>⭐ S AI PRO</h3>
+      <p class="modal-sub">${reason?reason+'<br><br>':''}Подписка PRO даёт безлимитные сообщения и все 14 моделей без ограничений.</p>
+      ${plans.map((p,i)=>`<button class="plan-btn" data-i="${i}">${p}</button>`).join('')}
+      <button class="modal-close" id="premClose">Позже</button>
+    </div>
+  </div>`;
+  const holder=document.createElement('div');
+  holder.innerHTML=tpl;
+  document.body.appendChild(holder.firstElementChild);
+  const m=$('premModal');
+  m.querySelectorAll('.plan-btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const i=+b.dataset.i;
+      activatePremium([30,90,36500][i]);
+      m.remove();
+    });
+  });
+  $('premClose').addEventListener('click',()=>m.remove());
+}
+function updateSubUI(){
+  // Пилюля подписки в кабинете (если есть) — обновляем статус
+  const el=document.getElementById('subStatus');
+  if(el){
+    if(hasPremium()){
+      el.innerHTML='👑 PRO • до '+premiumDate();
+      el.className='sub-badge pro';
+    }else{
+      const c=getTodayCount();
+      el.innerHTML='FREE • '+Math.max(0,FREE_DAILY_LIMIT-c)+' из '+FREE_DAILY_LIMIT+' сообщений';
+      el.className='sub-badge free';
+    }
+  }
+}
+
 // ===== CHAT CRUD =====
 function createChat(title){
   // Полноэкранная реклама при создании нового чата
@@ -1869,6 +1951,15 @@ async function sendMessage(){
   const inp=$('msgInput');
   const text=inp.value.trim();
   if(!text&&!S.img&&!S.video&&!S.file){inp.focus();return}
+
+  // Лимит 15 бесплатных сообщений в день
+  if(!S.premium&&getTodayCount()>=FREE_DAILY_LIMIT){
+    showPremiumDialog('Вы использовали все '+FREE_DAILY_LIMIT+' бесплатных сообщений на сегодня!');
+    return;
+  }
+  incTodayCount();
+  updateSubUI();
+
   if(!S.curId)createChat('Новый чат');
 
   // hide welcome
