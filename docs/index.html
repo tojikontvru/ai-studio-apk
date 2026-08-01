@@ -1203,7 +1203,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v6.8</span>
+    <span class="ver">v6.9</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -1285,7 +1285,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.8</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.9</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -1321,7 +1321,7 @@ a{color:var(--accent2);text-decoration:none}
 const CFG={
   API:'https://openrouter.ai/api/v1/chat/completions',
   KEY:atob('c2stb3ItdjEtMzc5MGY2YTdjMmFhMjNmNzc3NDE5YTFlOWI2NTdmYzc1MTE2NTVmMzQ3MGQ0OGQ0ZjFhNDU1ZjQ5Mjk4NTQxMg=='),
-  VERSION:'6.8',
+  VERSION:'6.9',
   DEV:'Safarali Group',
   MODELS:[
     {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢',cap:[]},
@@ -1445,92 +1445,77 @@ function initAuth(){
 }
 
 // ===== YANDEX ADS =====
-// Замените на ваши ID от Яндекс Рекламы (partner.yandex.ru)
-const YANDEX={
-  BLOCK_ID:'R-A-XXXXX-Y',          // ID рекламного блока для баннеров
-  INTERSTITIAL_ID:'R-A-XXXXX-Y',   // ID блока для межстраничной рекламы
-  // Для тестирования раскомментируйте:
-  //BLOCK_ID:'demo-banner-yandex',
-  //INTERSTITIAL_ID:'demo-interstitial-yandex',
-};
-let yandexLoaded=false;
-
-function loadYandexAds(){
-  if(yandexLoaded||document.getElementById('yandexAdsScript'))return;
-  const s=document.createElement('script');
-  s.id='yandexAdsScript';
-  s.async=true;
-  s.src='https://yandex.ru/ads/system/context.js';
-  document.head.appendChild(s);
-  yandexLoaded=true;
-  window.yandexContextAsyncCallbacks=window.yandexContextAsyncCallbacks||[];
-  log('ADS','Yandex context.js loaded');
-}
+// Native ads via Android AdBridge (Yandex Mobile Ads SDK)
+let yandexLoaded=true; // Mark as loaded since we use native SDK
 
 function renderBannerAd(containerId){
-  if(!yandexLoaded){loadYandexAds()}
-  window.yandexContextAsyncCallbacks=window.yandexContextAsyncCallbacks||[];
-  window.yandexContextAsyncCallbacks.push(function(){
-    try{
-      Ya.Context.AdvManager.render({
-        blockId:YANDEX.BLOCK_ID,
-        renderTo:containerId,
-        async:true
-      });
-    }catch(e){log('ERR','Banner render error: '+e.message)}
-  });
+  // Native banner is shown by Android in fixed position
+  // For web version, show placeholder
+  if(!window.AdBridge){
+    const el=document.getElementById(containerId);
+    if(el)el.innerHTML='<div style="text-align:center;color:var(--text3);font-size:11px;padding:8px">Реклама (веб-версия)</div>';
+  }else{
+    window.AdBridge.showBanner();
+  }
+  log('ADS','Banner ad requested');
 }
 
 function showInterstitialAd(callback){
-  if(!yandexLoaded){loadYandexAds()}
-  // Create overlay
+  if(window.AdBridge&&window.AdBridge.isInterstitialReady()){
+    const cbId='iad_'+Date.now();
+    window.__adCallbacks=window.__adCallbacks||{};
+    window.__adCallbacks[cbId]=(success)=>{
+      delete window.__adCallbacks[cbId];
+      if(callback)callback();
+    };
+    window.AdBridge.showInterstitial(cbId);
+    log('ADS','Interstitial requested via AdBridge');
+  }else{
+    // Web fallback: show simple overlay
+    showWebInterstitial(callback);
+  }
+}
+
+function showWebInterstitial(callback){
   let overlay=document.getElementById('interstitialOverlay');
   if(!overlay){
     overlay=document.createElement('div');
     overlay.id='interstitialOverlay';
     overlay.innerHTML=`
       <div class="interstitial-content">
-        <div class="interstitial-ad" id="interstitialAdContainer"></div>
+        <div class="interstitial-ad" id="interstitialAdContainer">
+          <div style="text-align:center;color:var(--text3);padding:20px">
+            <div style="font-size:32px;margin-bottom:12px">📢</div>
+            <div style="font-size:14px">Реклама</div>
+            <div style="font-size:11px;margin-top:4px;opacity:.6">Спонсор приложения</div>
+          </div>
+        </div>
         <button class="interstitial-close" id="interstitialClose">✕</button>
       </div>`;
     document.body.appendChild(overlay);
   }
   overlay.style.display='flex';
-  log('ADS','Interstitial shown');
-
-  // Render ad
-  window.yandexContextAsyncCallbacks=window.yandexContextAsyncCallbacks||[];
-  window.yandexContextAsyncCallbacks.push(function(){
-    try{
-      Ya.Context.AdvManager.render({
-        blockId:YANDEX.INTERSTITIAL_ID,
-        renderTo:'interstitialAdContainer',
-        async:true
-      });
-    }catch(e){log('ERR','Interstitial render error: '+e.message)}
-  });
-
-  // Close button (after 5 sec or manual)
   const closeBtn=document.getElementById('interstitialClose');
   closeBtn.style.display='none';
   setTimeout(()=>{closeBtn.style.display='flex'},5000);
   closeBtn.onclick=()=>{
     overlay.style.display='none';
-    log('ADS','Interstitial closed');
     if(callback)callback();
   };
-  // Auto-close after 30 sec
   setTimeout(()=>{
     if(overlay.style.display==='flex'){
       overlay.style.display='none';
       if(callback)callback();
     }
   },30000);
+  log('ADS','Web interstitial shown');
 }
 
-// ===== LIGHTBOX =====
-// ===== AD CALLBACK =====
-// (handled by Yandex JS SDK directly)
+// Ad callback from Android native
+window.__adCallback=function(cbId,success){
+  const cb=window.__adCallbacks?.[cbId];
+  if(cb)cb(success);
+};
 function openLightbox(el){
   const src=el.getAttribute('data-src');
   if(!src)return;
@@ -2217,8 +2202,7 @@ function init(){
   initAuth();
   // Show auth if not logged in
   if(!isLoggedIn())showAuth();else hideAuth();
-  // Load Yandex ads
-  loadYandexAds();
+  // Ads loaded via native AdBridge (Android) or web fallback
   console.log('🚀 S AI v'+CFG.VERSION+' ready');
   log('SYS','S AI v'+CFG.VERSION+' initialized');
 }
