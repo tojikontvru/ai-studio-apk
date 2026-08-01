@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#101828"/>
+<meta name="theme-color" content="#0b0f1a"/>
+<meta name="color-scheme" content="dark"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="description" content="S AI — бесплатный AI-чат с 14 моделями"/>
@@ -31,8 +32,12 @@
   --shadow:0 4px 24px rgba(0,0,0,.3);
 }
 *{box-sizing:border-box;margin:0;padding:0}
+html{
+  color-scheme:dark;-webkit-color-scheme:dark;
+  background:#0b0f1a!important;
+}
 html,body{height:100%;overflow:hidden;-webkit-text-size-adjust:100%}
-body{font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100dvh;-webkit-font-smoothing:antialiased}
+body{font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;background:#0b0f1a!important;color:var(--text);display:flex;flex-direction:column;height:100dvh;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 .main-wrap{flex:1;display:flex;flex-direction:column;min-width:0;min-height:100dvh;overflow:hidden}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:10px}
@@ -94,7 +99,7 @@ a{color:var(--accent2);text-decoration:none}
 
 /* ===== AUTH SCREEN ===== */
 .auth-overlay{
-  position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;
+  position:fixed;inset:0;z-index:9999;background:#0b0f1a;display:flex;
   align-items:center;justify-content:center;
 }
 .auth-overlay.hidden{display:none}
@@ -1198,7 +1203,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v6.7</span>
+    <span class="ver">v6.8</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -1280,7 +1285,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.7</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.8</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -1316,7 +1321,7 @@ a{color:var(--accent2);text-decoration:none}
 const CFG={
   API:'https://openrouter.ai/api/v1/chat/completions',
   KEY:atob('c2stb3ItdjEtMzc5MGY2YTdjMmFhMjNmNzc3NDE5YTFlOWI2NTdmYzc1MTE2NTVmMzQ3MGQ0OGQ0ZjFhNDU1ZjQ5Mjk4NTQxMg=='),
-  VERSION:'6.7',
+  VERSION:'6.8',
   DEV:'Safarali Group',
   MODELS:[
     {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢',cap:[]},
