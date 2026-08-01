@@ -214,6 +214,8 @@ a{color:var(--accent2);text-decoration:none}
 .msg-row.user .msg-bubble img.img-attach{border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 12px rgba(0,0,0,.3)}
 .msg-row.assistant .msg-bubble img.img-attach{border:1px solid var(--border)}
 .msg-bubble img.img-attach:active{transform:scale(.98)}
+.img-msg-wrap{margin-bottom:8px;text-align:center;cursor:pointer;line-height:0}
+.img-msg-wrap img.img-attach{margin:0 auto;display:block}
 
 /* Image lightbox overlay */
 .img-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:20px;animation:fadeIn .2s}
@@ -789,7 +791,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v5.8</span>
+    <span class="ver">v5.9</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -850,7 +852,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">5.8</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">5.9</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -875,7 +877,7 @@ a{color:var(--accent2);text-decoration:none}
 const CFG={
   API:'https://openrouter.ai/api/v1/chat/completions',
   KEY:atob('c2stb3ItdjEtMzc5MGY2YTdjMmFhMjNmNzc3NDE5YTFlOWI2NTdmYzc1MTE2NTVmMzQ3MGQ0OGQ0ZjFhNDU1ZjQ5Mjk4NTQxMg=='),
-  VERSION:'5.8',
+  VERSION:'5.9',
   DEV:'Safarali Group',
   MODELS:[
     {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢'},
@@ -899,6 +901,29 @@ const CFG={
 
 // ===== STATE =====
 const S={chats:{},curId:null,msgs:[],model:CFG.MODELS[0].id,theme:'dark',loading:false,abort:null,img:null};
+
+// ===== LIGHTBOX =====
+function openLightbox(el){
+  const src=el.getAttribute('data-src');
+  if(!src)return;
+  const ov=document.createElement('div');
+  ov.className='img-lightbox';
+  const full=document.createElement('img');
+  full.src=src;
+  ov.appendChild(full);
+  ov.addEventListener('click',()=>ov.remove());
+  document.body.appendChild(ov);
+}
+function openLightboxSrc(src){
+  if(!src)return;
+  const ov=document.createElement('div');
+  ov.className='img-lightbox';
+  const full=document.createElement('img');
+  full.src=src;
+  ov.appendChild(full);
+  ov.addEventListener('click',()=>ov.remove());
+  document.body.appendChild(ov);
+}
 
 // ===== HELPERS =====
 const $=id=>document.getElementById(id);
@@ -1003,31 +1028,23 @@ function renderMessages(){
     if(m.role==='assistant'&&(m.loading||!m.content)){
       bub.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
     }else{
-      let content=renderMd(m.content||'');
+      let content='';
+
+      // Заглушка для изображения (src будет установлен после innerHTML)
+      if(m.img){
+        content+='<div class="img-msg-wrap"><img class="img-attach" data-img="1" alt="Изображение"/></div>';
+      }
+
+      content+=renderMd(m.content||'');
       bub.innerHTML=content;
 
-      // Вставка изображения через DOM (надёжнее для base64)
+      // Устанавливаем src изображения ПОСЛЕ innerHTML (надёжнее для base64)
       if(m.img){
-        const imgWrap=document.createElement('div');
-        imgWrap.style.cssText='margin-bottom:8px;text-align:center';
-        const imgEl=document.createElement('img');
-        imgEl.className='img-attach';
-        imgEl.src=m.img;
-        imgEl.alt='Изображение';
-        imgEl.loading='lazy';
-        imgEl.style.cssText='max-width:280px;max-height:260px;border-radius:12px;cursor:pointer';
-        imgEl.addEventListener('click',()=>{
-          // Полноэкранный просмотр
-          const ov=document.createElement('div');
-          ov.className='img-lightbox';
-          const full=document.createElement('img');
-          full.src=m.img;
-          ov.appendChild(full);
-          ov.addEventListener('click',()=>ov.remove());
-          document.body.appendChild(ov);
-        });
-        imgWrap.appendChild(imgEl);
-        bub.insertBefore(imgWrap,bub.firstChild);
+        const img=bub.querySelector('img[data-img]');
+        if(img){
+          img.src=m.img;
+          img.parentElement.onclick=()=>openLightboxSrc(m.img);
+        }
       }
 
       const meta=document.createElement('div');
@@ -1311,13 +1328,28 @@ function bindEvents(){
 
 async function handleAttach(file){
   try{
+    // Сжимаем изображение перед сохранением
     const reader=new FileReader();
     reader.onload=()=>{
-      S.img=reader.result;
-      $('imgPreview').src=S.img;
-      $('imgPreviewBar').style.display='flex';
-      checkSendReady();
-      toast('Изображение прикреплено');
+      const img=new Image();
+      img.onload=()=>{
+        const MAX=800;
+        let w=img.width,h=img.height;
+        if(w>MAX||h>MAX){
+          if(w>h){h=Math.round(h*MAX/w);w=MAX}
+          else{w=Math.round(w*MAX/h);h=MAX}
+        }
+        const canvas=document.createElement('canvas');
+        canvas.width=w;canvas.height=h;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        S.img=canvas.toDataURL('image/jpeg',0.85);
+        $('imgPreview').src=S.img;
+        $('imgPreviewBar').style.display='flex';
+        checkSendReady();
+        toast('Изображение прикреплено ('+w+'×'+h+')');
+      };
+      img.src=reader.result;
     };
     reader.readAsDataURL(file);
   }catch(e){toast('Ошибка загрузки')}
