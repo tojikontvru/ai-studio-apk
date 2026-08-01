@@ -12,6 +12,11 @@
 <meta name="format-detection" content="telephone=no"/>
 <meta name="mobile-web-app-status-bar-style" content="black-translucent"/>
 <title>S AI</title>
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png"/>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png"/>
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"/>
+<link rel="manifest" href="manifest.json"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
@@ -50,9 +55,13 @@ a{color:var(--accent2);text-decoration:none}
 .header .menu-btn:active{transform:scale(.92);background:var(--bg4)}
 .header .logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .header .logo .icon{
-  width:32px;height:32px;border-radius:10px;background:var(--user-bg);display:flex;
+  width:32px;height:32px;border-radius:10px;
+  background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;
   align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:700;
+  box-shadow:0 2px 8px rgba(99,102,241,.3);
+  transition:all .3s cubic-bezier(.4,0,.2,1);
 }
+.header .logo .icon:hover{transform:scale(1.1) rotate(-5deg);box-shadow:0 4px 16px rgba(99,102,241,.5)}
 .header .logo .name{font-weight:700;font-size:16px;color:var(--text);letter-spacing:-.3px}
 .header .logo .ver{font-size:11px;color:var(--text3);font-weight:500;margin-left:2px}
 
@@ -96,9 +105,12 @@ a{color:var(--accent2);text-decoration:none}
 }
 .auth-logo{text-align:center;margin-bottom:30px}
 .auth-logo .a-icon{
-  width:64px;height:64px;border-radius:18px;background:var(--user-bg);display:inline-flex;
-  align-items:center;justify-content:center;font-size:28px;color:#fff;font-weight:700;
-  margin-bottom:12px;
+  width:64px;height:64px;border-radius:18px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:28px;color:#fff;font-weight:700;margin-bottom:12px;
+  box-shadow:0 4px 24px rgba(99,102,241,.4);
+  animation:glow 2s ease-in-out infinite,float 3s ease-in-out infinite;
 }
 .auth-logo h2{font-size:22px;color:var(--text);margin-bottom:4px}
 .auth-logo p{font-size:13px;color:var(--text3)}
@@ -927,7 +939,122 @@ a{color:var(--accent2);text-decoration:none}
 .lp-ts{color:var(--text3);margin-right:6px}
 .lp-type{font-weight:700;margin-right:4px}
 
-/* --- Reduced motion (accessibility) --- */
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInScale{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(99,102,241,.3)}50%{box-shadow:0 0 20px rgba(99,102,241,.6)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
+@keyframes logoSpin{0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(180deg) scale(1.1)}100%{transform:rotate(360deg) scale(1)}}
+@keyframes bgGradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(20px)}}
+
+/* Splash screen */
+.splash{
+  position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#0a0a0f 0%,#111118 50%,#0a0a0f 100%);
+  background-size:200% 200%;animation:bgGradient 4s ease infinite;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity .5s ease,visibility .5s ease;
+}
+.splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.splash-icon{
+  width:100px;height:100px;border-radius:28px;
+  background:linear-gradient(135deg,#6366f1,#818cf8);
+  display:flex;align-items:center;justify-content:center;
+  font-size:48px;color:#fff;font-weight:800;
+  animation:glow 2s ease-in-out infinite,pulse 2s ease-in-out infinite;
+  box-shadow:0 8px 40px rgba(99,102,241,.4);
+  margin-bottom:24px;
+}
+.splash-title{
+  font-size:28px;font-weight:700;
+  background:linear-gradient(135deg,#fff 0%,#818cf8 50%,#6366f1 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:8px;
+}
+.splash-sub{font-size:14px;color:#6b7280;margin-bottom:32px}
+.splash-dots{display:flex;gap:8px}
+.splash-dots span{
+  width:8px;height:8px;border-radius:50%;background:#6366f1;
+  animation:typingBounce 1.2s ease-in-out infinite;
+}
+.splash-dots span:nth-child(2){animation-delay:.15s}
+.splash-dots span:nth-child(3){animation-delay:.3s}
+
+/* Auth animations */
+.auth-overlay{animation:fadeIn .3s ease}
+.auth-card{animation:fadeInScale .4s ease}
+.auth-logo .a-icon{animation:float 3s ease-in-out infinite}
+.auth-btn{transition:all .2s ease}
+.auth-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(99,102,241,.3)}
+.auth-btn:active{transform:translateY(0) scale(.97)}
+
+/* Message animations */
+.msg{animation:fadeInUp .3s ease}
+.msg.user{animation:slideInRight .3s ease}
+.msg.assistant{animation:slideInLeft .3s ease}
+
+/* Welcome */
+.welcome .w-icon{animation:float 3s ease-in-out infinite}
+
+/* Header buttons */
+.settings-btn,.log-btn{transition:all .25s cubic-bezier(.4,0,.2,1)}
+.settings-btn:hover,.log-btn:hover{transform:scale(1.08)}
+.settings-btn:active,.log-btn:active{transform:scale(.92)}
+
+/* Sidebar items */
+.sidebar-item{transition:all .2s cubic-bezier(.4,0,.2,1)}
+.sidebar-item:hover{transform:translateX(4px)}
+.sidebar-item:active{transform:scale(.97)}
+
+/* Send button */
+.send-btn{transition:all .25s cubic-bezier(.4,0,.2,1)}
+.send-btn:hover{transform:scale(1.08)}
+.send-btn:active{transform:scale(.9)}
+.send-btn.sending{animation:pulse 1s ease infinite}
+
+/* Model pill */
+.model-pill{transition:all .25s cubic-bezier(.4,0,.2,1)}
+.model-pill:hover{transform:scale(1.03);box-shadow:0 2px 12px rgba(99,102,241,.2)}
+
+/* Toast */
+.toast.show{animation:toastIn .3s cubic-bezier(.4,0,.2,1)}
+
+/* Settings modal */
+.settings-overlay.show .settings-card{animation:fadeInScale .3s ease}
+
+/* Log panel */
+.log-panel.show{animation:slideInLeft .3s ease}
+
+/* Typing indicator */
+.typing span{animation:typingBounce 1.2s ease-in-out infinite}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+
+/* Attach button */
+.attach-btn{transition:all .25s ease}
+.attach-btn:hover{transform:scale(1.1) rotate(45deg)}
+
+/* Shimmer loading effect for API responses */
+.msg-bubble.loading{
+  background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;
+}
+
+/* Reduced motion (accessibility) --- */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .splash-icon,.auth-logo .a-icon,.header .logo .icon{animation:none!important}
+  .msg{animation:none!important}
+}
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
   .welcome .w-icon{animation:none}
@@ -944,6 +1071,16 @@ a{color:var(--accent2);text-decoration:none}
 </style>
 </head>
 <body>
+
+<!-- SPLASH SCREEN -->
+<div class="splash" id="splash">
+  <div class="splash-icon">S</div>
+  <div class="splash-title">S AI</div>
+  <div class="splash-sub">AI-ассистент нового поколения</div>
+  <div class="splash-dots">
+    <span></span><span></span><span></span>
+  </div>
+</div>
 
 <!-- AUTH SCREEN -->
 <div class="auth-overlay" id="authOverlay">
@@ -1014,7 +1151,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v6.5</span>
+    <span class="ver">v6.6</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -1096,7 +1233,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.5</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.6</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -1132,7 +1269,7 @@ a{color:var(--accent2);text-decoration:none}
 const CFG={
   API:'https://openrouter.ai/api/v1/chat/completions',
   KEY:atob('c2stb3ItdjEtMzc5MGY2YTdjMmFhMjNmNzc3NDE5YTFlOWI2NTdmYzc1MTE2NTVmMzQ3MGQ0OGQ0ZjFhNDU1ZjQ5Mjk4NTQxMg=='),
-  VERSION:'6.5',
+  VERSION:'6.6',
   DEV:'Safarali Group',
   MODELS:[
     {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢',cap:[]},
@@ -1930,7 +2067,16 @@ function init(){
   log('SYS','S AI v'+CFG.VERSION+' initialized');
 }
 
-function boot(){try{init()}catch(e){console.error('Init:',e);setTimeout(boot,500)}}
+function boot(){
+  try{
+    init();
+    // Hide splash after app loads
+    setTimeout(()=>{
+      const splash=document.getElementById('splash');
+      if(splash){splash.classList.add('hidden');setTimeout(()=>splash.remove(),600)}
+    },1200);
+  }catch(e){console.error('Init:',e);setTimeout(boot,500)}
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 </script>
 </body>
