@@ -1207,7 +1207,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v7.7</span>
+    <span class="ver">v7.8</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -1289,7 +1289,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">7.7</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">7.8</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -1712,7 +1712,7 @@ function renderMessages(){
       if(m.role==='assistant'){
         const actions=document.createElement('div');
         actions.className='msg-actions';
-        actions.innerHTML=`<button data-c="${i}">📋 Копировать</button><button data-r="${i}">🔄 Заново</button><button data-e="1">📥 TXT</button>`;
+        actions.innerHTML=`<button data-c="${i}">📋 Копировать</button><button data-r="${i}">🔄 Заново</button><button data-d="${i}">🗑 Удалить</button><button data-e="1">📥 TXT</button>`;
         actions.addEventListener('click',e=>{
           const btn=e.target.closest('button');if(!btn)return;
           if(btn.dataset.c!=null){
@@ -1724,11 +1724,28 @@ function renderMessages(){
             S.msgs.splice(i);saveCurrent();renderMessages();
             const inp=$('msgInput');inp.value=ut;inp.focus();checkSendReady();
           }
+          if(btn.dataset.d!=null){
+            S.msgs.splice(i,1);saveCurrent();renderMessages();toast('Сообщение удалено');
+          }
           if(btn.dataset.e!=null){
             const txt=S.msgs.map(x=>`[${x.role==='user'?'Вы':'AI'}]: ${x.content}`).join('\n\n');
             const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
             const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='chat.txt';a.click();
             toast('Экспорт завершён');
+          }
+        });
+        bub.appendChild(actions);
+      }else{
+        const actions=document.createElement('div');
+        actions.className='msg-actions';
+        actions.innerHTML=`<button data-c="${i}">📋 Копировать</button><button data-d="${i}">🗑 Удалить</button>`;
+        actions.addEventListener('click',e=>{
+          const btn=e.target.closest('button');if(!btn)return;
+          if(btn.dataset.c!=null){
+            navigator.clipboard?.writeText(m.content).then(()=>toast('Скопировано!')).catch(()=>{});
+          }
+          if(btn.dataset.d!=null){
+            S.msgs.splice(i,1);saveCurrent();renderMessages();toast('Сообщение удалено');
           }
         });
         bub.appendChild(actions);
