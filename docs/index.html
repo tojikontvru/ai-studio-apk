@@ -1203,7 +1203,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v6.11</span>
+    <span class="ver">v6.12</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -1285,7 +1285,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.11</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.12</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -1321,7 +1321,7 @@ a{color:var(--accent2);text-decoration:none}
 const CFG={
   API:'https://openrouter.ai/api/v1/chat/completions',
   KEY:atob('c2stb3ItdjEtMzc5MGY2YTdjMmFhMjNmNzc3NDE5YTFlOWI2NTdmYzc1MTE2NTVmMzQ3MGQ0OGQ0ZjFhNDU1ZjQ5Mjk4NTQxMg=='),
-  VERSION:'6.11',
+  VERSION:'6.12',
   DEV:'Safarali Group',
   MODELS:[
     {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢',cap:[]},
@@ -1626,8 +1626,7 @@ function saveCurrent(){if(S.curId&&S.chats[S.curId])S.chats[S.curId].msgs=S.msgs
 
 // ===== CHAT CRUD =====
 function createChat(title){
-  // Show interstitial ad on new chat
-  showInterstitialAd(()=>doCreateChat(title));
+  doCreateChat(title);
 }
 function doCreateChat(title){
   const id='c'+Date.now();
