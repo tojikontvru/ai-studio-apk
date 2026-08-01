@@ -839,7 +839,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v6.1</span>
+    <span class="ver">v6.2</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -907,7 +907,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.1</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.2</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -934,7 +934,7 @@ a{color:var(--accent2);text-decoration:none}
 const CFG={
   API:'https://openrouter.ai/api/v1/chat/completions',
   KEY:atob('c2stb3ItdjEtMzc5MGY2YTdjMmFhMjNmNzc3NDE5YTFlOWI2NTdmYzc1MTE2NTVmMzQ3MGQ0OGQ0ZjFhNDU1ZjQ5Mjk4NTQxMg=='),
-  VERSION:'6.1',
+  VERSION:'6.2',
   DEV:'Safarali Group',
   MODELS:[
     {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢'},
@@ -1188,9 +1188,9 @@ function checkSendReady(){
 function getModelId(){
   // Автоматический выбор модели по типу вложения
   if(S.img||S.video){
-    const visionModels=['google/gemma-4-31b-it:free','google/gemma-4-26b-a4b-it:free','nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free','nvidia/nemotron-nano-12b-v2-vl:free'];
+    const visionModels=['google/gemma-4-26b-a4b-it:free','google/gemma-4-31b-it:free','nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free','nvidia/nemotron-nano-12b-v2-vl:free'];
     if(visionModels.includes(S.model))return S.model;
-    return visionModels[0]; // Gemma 4 31B по умолчанию
+    return visionModels[0]; // Gemma 4 26B по умолчанию (надёжнее 31B)
   }
   return S.model;
 }
@@ -1278,36 +1278,51 @@ async function sendMessage(){
   }
 
   try{
-    const model=getModelId();
-    const history=getApiHistory();
     const savedImg=attImg;const savedVideo=attVideo;const savedFile=attFile;
-    // Временно возвращаем вложения для API
+    // Временно возвращаем вложения для API + выбор модели
     S.img=savedImg;S.video=savedVideo;S.file=savedFile;S.fileName=attFileName;S.fileSize=attFileSize;
+    const model=getModelId();
+    const hist=getApiHistory();
     const userMsgs=buildApiMessages(text);
+    const modelInfo=CFG.MODELS.find(m=>m.id===model);
+    if((savedImg||savedVideo)&&modelInfo)toast('🤖 Модель: '+modelInfo.n);
     S.img=null;S.video=null;S.file=null;S.fileName='';S.fileSize=0;
-    const messages=[...history.slice(0,-1),...userMsgs];
+    const messages=[...hist.slice(0,-1),...userMsgs];
 
     S.abort=new AbortController();
     const key=CFG.KEY||'';
-    const res=await fetch(CFG.API,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'HTTP-Referer':location.origin},
-      body:JSON.stringify({model,messages,max_tokens:2048,temperature:0.7,top_p:0.9}),
-      signal:S.abort.signal
-    });
-    if(!res.ok){
-      const errText=await res.text();
-      let errMsg='Ошибка: '+res.status;
-      try{const e=JSON.parse(errText);errMsg=e.error?.message||errMsg}catch(x){}
-      throw new Error(errMsg);
-    }
-    const data=await res.json();
-    const reply=data.choices?.[0]?.message?.content||'Нет ответа от модели';
+    const visionModels=['google/gemma-4-26b-a4b-it:free','google/gemma-4-31b-it:free','nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free','nvidia/nemotron-nano-12b-v2-vl:free'];
+    let currentModel=model;
+    let lastErr=null;
 
-    const last=S.msgs[S.msgs.length-1];
-    if(last&&last.loading){last.content=reply;last.loading=false;last.ts=Date.now()}
-    saveCurrent();renderMessages();
-    setTimeout(()=>$('msgInput').focus(),100);
+    for(let attempt=0;attempt<3;attempt++){
+      const res=await fetch(CFG.API,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'HTTP-Referer':location.origin},
+        body:JSON.stringify({model:currentModel,messages,max_tokens:2048,temperature:0.7,top_p:0.9}),
+        signal:S.abort.signal
+      });
+      if(res.ok){
+        const data=await res.json();
+        const reply=data.choices?.[0]?.message?.content||'Нет ответа от модели';
+        const last=S.msgs[S.msgs.length-1];
+        if(last&&last.loading){last.content=reply;last.loading=false;last.ts=Date.now()}
+        saveCurrent();renderMessages();
+        setTimeout(()=>$('msgInput').focus(),100);
+        return; // Успех
+      }
+      // Ошибка — пробуем другую vision-модель
+      const errText=await res.text();
+      try{const e=JSON.parse(errText);lastErr=e.error?.message||('Ошибка '+res.status)}catch(x){lastErr='Ошибка '+res.status}
+      const nextIdx=visionModels.indexOf(currentModel)+1;
+      if(nextIdx<visionModels.length&&(res.status===400||res.status===404)){
+        currentModel=visionModels[nextIdx];
+        toast('⚠️ Переключаю модель → '+CFG.MODELS.find(m=>m.id===currentModel)?.n);
+        continue;
+      }
+      break; // Другая ошибка — не retry
+    }
+    throw new Error(lastErr||'Ошибка API');
   }catch(err){
     if(err.name==='AbortError'){
       const last=S.msgs[S.msgs.length-1];
