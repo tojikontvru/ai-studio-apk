@@ -380,7 +380,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v5.5</span>
+    <span class="ver">v5.6</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -452,9 +452,9 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">5.5</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">5.6</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
-        <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">23 FREE + Vision</span></div>
+        <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
         <div class="ai-row"><span class="ai-label">Описание</span><span class="ai-val">AI-ассистент нового поколения</span></div>
       </div>
@@ -480,31 +480,22 @@ const CFG={
   VERSION:'5.1',
   DEV:'Safarali Group',
   MODELS:[
-    {id:'meta-llama/llama-4-maverick:free',n:'Llama 4 Maverick',d:'Meta · 400B · Быстрый',icon:'🦙'},
-    {id:'google/gemini-2.0-flash-exp:free',n:'Gemini 2.0 Flash',d:'Google · Мульти-модальный',icon:'✦'},
-    {id:'deepseek/deepseek-chat-v3-0324:free',n:'DeepSeek V3',d:'DeepSeek · Код и текст',icon:'🔍'},
-    {id:'qwen/qwen2.5-72b-instruct:free',n:'Qwen 2.5 72B',d:'Alibaba · Мощный',icon:'🧠'},
-    {id:'mistralai/mistral-small-3.1-24b-instruct:free',n:'Mistral Small 3.1',d:'Mistral · Баланс',icon:'🌊'},
-    {id:'google/gemini-2.0-flash-lite:free',n:'Gemini 2.0 Lite',d:'Google · Лёгкий и быстрый',icon:'⚡'},
-    {id:'mistralai/mistral-nemo:free',n:'Mistral Nemo',d:'Mistral · 12B',icon:'🌊'},
-    {id:'qwen/qwen2.5-32b-instruct:free',n:'Qwen 2.5 32B',d:'Alibaba · Средний',icon:'🧠'},
-    {id:'qwen/qwen2.5-14b-instruct:free',n:'Qwen 2.5 14B',d:'Alibaba · Компактный',icon:'🧠'},
-    {id:'mistralai/mistral-7b-instruct:free',n:'Mistral 7B',d:'Mistral · Быстрый',icon:'🌊'},
-    {id:'google/gemma-2-9b-it:free',n:'Gemma 2 9B',d:'Google · Лёгкий',icon:'💎'},
-    {id:'meta-llama/llama-3.2-3b-instruct:free',n:'Llama 3.2 3B',d:'Meta · Компактный',icon:'🦙'},
-    {id:'meta-llama/llama-3.2-1b-instruct:free',n:'Llama 3.2 1B',d:'Meta · Минимальный',icon:'🦙'},
-    {id:'huggingfaceh4/zephyr-7b-beta:free',n:'Zephyr 7B',d:'HuggingFace · Чат',icon:'🌬'},
-    {id:'nousresearch/nous-hermes-2-mixtral:free',n:'Nous Hermes 2',d:'Nous · Mixtral',icon:'🔮'},
-    {id:'openchat/openchat_3.5:free',n:'OpenChat 3.5',d:'OpenChat · Общий',icon:'💬'},
-    {id:'teknium/openhermes-2.5-mistral-7b:free',n:'OpenHermes 2.5',d:'Teknium · Mistral',icon:'🔥'},
-    {id:'gryphe/mythomist-7b:free',n:'MythoMist 7B',d:'Gryphe · Творческий',icon:'🎭'},
-    {id:'undi95/toppy-m-7b:free',n:'Toppy M 7B',d:'Undi95 · Универсальный',icon:'🎩'},
-    {id:'hf.co/Open-Orca/Mistral-7B-Open-Orca:free',n:'Mistral OpenOrca',d:'OpenOrca · Mistral',icon:'🐙'},
-    {id:'openai/gpt-oss-120b:free',n:'GPT OSS 120B',d:'OpenAI · Большой',icon:'🤖'},
-    {id:'openai/gpt-oss-20b:free',n:'GPT OSS 20B',d:'OpenAI · Быстрый',icon:'🤖'},
-    {id:'meta-llama/llama-guard-4-12b:free',n:'Llama Guard 4',d:'Meta · Модерация',icon:'🛡'}
+    {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢'},
+    {id:'nvidia/nemotron-3-super-120b-a12b:free',n:'Nemotron 3 Super 120B',d:'NVIDIA · 120B · Гибридный MoE · 262K ctx',icon:'🟢'},
+    {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',n:'Nemotron 3 Nano Omni',d:'NVIDIA · 30B · Мультимодальный · 🔇🖼🎬',icon:'🟢'},
+    {id:'nvidia/nemotron-3-nano-30b-a3b:free',n:'Nemotron 3 Nano 30B',d:'NVIDIA · 30B · Компактный MoE · 256K ctx',icon:'🟢'},
+    {id:'nvidia/nemotron-nano-12b-v2-vl:free',n:'Nemotron Nano 12B VL',d:'NVIDIA · 12B · Vision+Video · 128K ctx',icon:'🟢'},
+    {id:'nvidia/nemotron-nano-9b-v2:free',n:'Nemotron Nano 9B V2',d:'NVIDIA · 9B · Быстрый · 128K ctx',icon:'🟢'},
+    {id:'nvidia/nemotron-3.5-content-safety:free',n:'Nemotron 3.5 Safety',d:'NVIDIA · 4B · Мультимодальный · Модерация',icon:'🛡'},
+    {id:'google/gemma-4-31b-it:free',n:'Gemma 4 31B',d:'Google · 31B · Dense Multimodal · 🔇🖼🎬 · 262K',icon:'💎'},
+    {id:'google/gemma-4-26b-a4b-it:free',n:'Gemma 4 26B A4B',d:'Google · 26B · MoE Multimodal · 🔇🖼🎬 · 262K',icon:'💎'},
+    {id:'openai/gpt-oss-20b:free',n:'GPT OSS 20B',d:'OpenAI · 21B · Open-weights · 131K ctx',icon:'🤖'},
+    {id:'inclusionai/ling-3.0-flash:free',n:'Ling 3.0 Flash',d:'LingAI · 124B MoE · Быстрый · 262K ctx',icon:'⚡'},
+    {id:'cohere/north-mini-code:free',n:'North Mini Code',d:'Cohere · Кодинг · 256K ctx',icon:'💻'},
+    {id:'poolside/laguna-s-2.1:free',n:'Poolside Laguna S 2.1',d:'Poolside · Кодинг-агент · 262K ctx',icon:'🌊'},
+    {id:'poolside/laguna-xs-2.1:free',n:'Poolside Laguna XS 2.1',d:'Poolside · 33B MoE · Кодинг · 262K ctx',icon:'🌊'}
   ],
-  VISION_IDS:['meta-llama/llama-4-maverick:free','google/gemini-2.0-flash-exp:free','google/gemini-2.0-flash-lite:free','qwen/qwen2.5-72b-instruct:free','mistralai/mistral-small-3.1-24b-instruct:free','qwen/qwen2.5-32b-instruct:free','openai/gpt-oss-120b:free'],
+  VISION_IDS:['google/gemma-4-31b-it:free','google/gemma-4-26b-a4b-it:free','nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free','nvidia/nemotron-nano-12b-v2-vl:free','nvidia/nemotron-3.5-content-safety:free'],
   SUGGESTIONS:['Что ты умеешь?','Объясни квантовую физику','Напиши стих о технологиях','План на день','Факт о космосе','Идея для проекта']
 };
 
@@ -595,7 +586,7 @@ function renderChatList(){
 function renderMessages(){
   const mc=$('messages');mc.innerHTML='';
   if(!S.msgs.length){
-    mc.innerHTML=`<div class="welcome"><div class="w-icon">✦</div><h1>Привет! Я S AI</h1><p>Задайте любой вопрос — я помогу с текстом, кодом, идеями и творческими задачами</p><div class="features"><div class="feat">🆓 23 FREE модели</div><div class="feat">🖼 Vision / изображения</div><div class="feat">💾 Чаты сохраняются</div><div class="feat">🔑 API подключён</div></div></div>`;
+    mc.innerHTML=`<div class="welcome"><div class="w-icon">✦</div><h1>Привет! Я S AI</h1><p>Задайте любой вопрос — я помогу с текстом, кодом, идеями и творческими задачами</p><div class="features"><div class="feat">🆓 14 FREE модели</div><div class="feat">🖼 Vision / изображения</div><div class="feat">💾 Чаты сохраняются</div><div class="feat">🔑 API подключён</div></div></div>`;
     renderSuggestions(mc);
     return;
   }
