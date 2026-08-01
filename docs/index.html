@@ -210,7 +210,15 @@ a{color:var(--accent2);text-decoration:none}
 .msg-bubble h2{font-size:16px}
 .msg-bubble h3{font-size:15px}
 .msg-bubble a{color:var(--accent2)}
-.msg-bubble img.img-attach{max-width:240px;max-height:200px;border-radius:10px;margin-bottom:8px;border:1px solid var(--border)}
+.msg-bubble img.img-attach{display:block;max-width:280px;max-height:260px;width:auto;height:auto;border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,.15);object-fit:contain;cursor:pointer;background:rgba(0,0,0,.2)}
+.msg-row.user .msg-bubble img.img-attach{border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.msg-row.assistant .msg-bubble img.img-attach{border:1px solid var(--border)}
+.msg-bubble img.img-attach:active{transform:scale(.98)}
+
+/* Image lightbox overlay */
+.img-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:20px;animation:fadeIn .2s}
+.img-lightbox img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 4px 32px rgba(0,0,0,.5)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 /* ===== INPUT AREA ===== */
 .input-wrap{
@@ -396,6 +404,7 @@ a{color:var(--accent2);text-decoration:none}
   .welcome .features{gap:8px}
   .welcome .feat{padding:6px 10px;font-size:12px}
   .msg-bubble{max-width:calc(100% - 42px)}
+  .msg-bubble img.img-attach{max-width:200px;max-height:180px}
   .input-box textarea{font-size:16px}
 }
 
@@ -431,6 +440,7 @@ a{color:var(--accent2);text-decoration:none}
   .msg-row{max-width:640px}
   .msg-avatar{width:34px;height:34px;font-size:15px}
   .msg-bubble{font-size:15px;padding:14px 18px}
+  .msg-bubble img.img-attach{max-width:360px;max-height:320px}
   .msg-bubble .msg-actions button{padding:5px 12px;font-size:12px}
   .input-wrap{padding:12px 20px 16px}
   .input-box{max-width:640px;padding:8px 10px 8px 18px;gap:12px}
@@ -779,7 +789,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v5.7</span>
+    <span class="ver">v5.8</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -840,7 +850,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">5.7</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">5.8</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -865,7 +875,7 @@ a{color:var(--accent2);text-decoration:none}
 const CFG={
   API:'https://openrouter.ai/api/v1/chat/completions',
   KEY:atob('c2stb3ItdjEtMzc5MGY2YTdjMmFhMjNmNzc3NDE5YTFlOWI2NTdmYzc1MTE2NTVmMzQ3MGQ0OGQ0ZjFhNDU1ZjQ5Mjk4NTQxMg=='),
-  VERSION:'5.7',
+  VERSION:'5.8',
   DEV:'Safarali Group',
   MODELS:[
     {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢'},
@@ -993,10 +1003,32 @@ function renderMessages(){
     if(m.role==='assistant'&&(m.loading||!m.content)){
       bub.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
     }else{
-      let content='';
-      if(m.img){content+=`<img class="img-attach" src="${m.img}" alt="image"/>`}
-      content+=renderMd(m.content||'');
+      let content=renderMd(m.content||'');
       bub.innerHTML=content;
+
+      // Вставка изображения через DOM (надёжнее для base64)
+      if(m.img){
+        const imgWrap=document.createElement('div');
+        imgWrap.style.cssText='margin-bottom:8px;text-align:center';
+        const imgEl=document.createElement('img');
+        imgEl.className='img-attach';
+        imgEl.src=m.img;
+        imgEl.alt='Изображение';
+        imgEl.loading='lazy';
+        imgEl.style.cssText='max-width:280px;max-height:260px;border-radius:12px;cursor:pointer';
+        imgEl.addEventListener('click',()=>{
+          // Полноэкранный просмотр
+          const ov=document.createElement('div');
+          ov.className='img-lightbox';
+          const full=document.createElement('img');
+          full.src=m.img;
+          ov.appendChild(full);
+          ov.addEventListener('click',()=>ov.remove());
+          document.body.appendChild(ov);
+        });
+        imgWrap.appendChild(imgEl);
+        bub.insertBefore(imgWrap,bub.firstChild);
+      }
 
       const meta=document.createElement('div');
       meta.className='msg-time';
