@@ -83,6 +83,72 @@ a{color:var(--accent2);text-decoration:none}
 .log-btn:active{transform:scale(.92)}
 .log-btn.active{background:rgba(99,102,241,.12);color:var(--accent2);border-color:var(--accent)}
 
+/* ===== AUTH SCREEN ===== */
+.auth-overlay{
+  position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;
+  align-items:center;justify-content:center;
+}
+.auth-overlay.hidden{display:none}
+.auth-card{
+  width:100%;max-width:380px;padding:40px 30px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow);
+}
+.auth-logo{text-align:center;margin-bottom:30px}
+.auth-logo .a-icon{
+  width:64px;height:64px;border-radius:18px;background:var(--user-bg);display:inline-flex;
+  align-items:center;justify-content:center;font-size:28px;color:#fff;font-weight:700;
+  margin-bottom:12px;
+}
+.auth-logo h2{font-size:22px;color:var(--text);margin-bottom:4px}
+.auth-logo p{font-size:13px;color:var(--text3)}
+.auth-tabs{display:flex;gap:0;margin-bottom:24px;background:var(--bg3);border-radius:10px;padding:3px}
+.auth-tab{
+  flex:1;padding:10px;text-align:center;font-size:14px;font-weight:600;color:var(--text3);
+  border:none;background:transparent;border-radius:8px;cursor:pointer;transition:all .2s;
+}
+.auth-tab.active{background:var(--accent);color:#fff}
+.auth-form{display:flex;flex-direction:column;gap:16px}
+.auth-form.hidden{display:none}
+.auth-field{display:flex;flex-direction:column;gap:6px}
+.auth-field label{font-size:13px;color:var(--text2);font-weight:500}
+.auth-field input{
+  width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s;
+}
+.auth-field input:focus{border-color:var(--accent)}
+.auth-field input::placeholder{color:var(--text3)}
+.auth-btn{
+  width:100%;padding:13px;background:var(--user-bg);color:#fff;border:none;border-radius:12px;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:4px;
+}
+.auth-btn:active{transform:scale(.97)}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed}
+.auth-error{color:#f87171;font-size:12px;text-align:center;min-height:18px}
+.auth-skip{
+  text-align:center;margin-top:16px;
+}
+.auth-skip a{font-size:13px;color:var(--text3);cursor:pointer;text-decoration:underline}
+.auth-skip a:hover{color:var(--accent2)}
+
+/* Profile in settings */
+.profile-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;
+  margin-bottom:16px;
+}
+.profile-avatar{
+  width:56px;height:56px;border-radius:16px;background:var(--user-bg);display:flex;
+  align-items:center;justify-content:center;font-size:24px;color:#fff;font-weight:700;
+  margin-bottom:12px;
+}
+.profile-name{font-size:16px;font-weight:600;color:var(--text);margin-bottom:2px}
+.profile-email{font-size:13px;color:var(--text3)}
+.btn-logout{
+  width:100%;padding:11px;background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2);
+  border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:12px;
+}
+.btn-logout:hover{background:rgba(239,68,68,.2)}
+
 /* ===== LOG PANEL ===== */
 .log-panel{
   position:fixed;top:0;right:0;bottom:0;width:340px;background:var(--bg2);z-index:500;
@@ -878,6 +944,55 @@ a{color:var(--accent2);text-decoration:none}
 </head>
 <body>
 
+<!-- AUTH SCREEN -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="a-icon">S</div>
+      <h2>S AI</h2>
+      <p>AI-ассистент нового поколения</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabRegister">Регистрация</button>
+      <button class="auth-tab" id="tabLogin">Вход</button>
+    </div>
+    <!-- Register -->
+    <form class="auth-form" id="registerForm">
+      <div class="auth-field">
+        <label>👤 Имя</label>
+        <input type="text" id="regName" placeholder="Ваше имя" required/>
+      </div>
+      <div class="auth-field">
+        <label>📧 Email</label>
+        <input type="email" id="regEmail" placeholder="email@example.com" required/>
+      </div>
+      <div class="auth-field">
+        <label>🔒 Пароль</label>
+        <input type="password" id="regPass" placeholder="Минимум 4 символа" required minlength="4"/>
+      </div>
+      <div class="auth-field">
+        <label>🔒 Повторите пароль</label>
+        <input type="password" id="regPass2" placeholder="Ещё раз пароль" required/>
+      </div>
+      <div class="auth-error" id="regError"></div>
+      <button type="submit" class="auth-btn" id="regBtn">Создать аккаунт</button>
+    </form>
+    <!-- Login -->
+    <form class="auth-form hidden" id="loginForm">
+      <div class="auth-field">
+        <label>📧 Email</label>
+        <input type="email" id="loginEmail" placeholder="email@example.com" required/>
+      </div>
+      <div class="auth-field">
+        <label>🔒 Пароль</label>
+        <input type="password" id="loginPass" placeholder="Ваш пароль" required/>
+      </div>
+      <div class="auth-error" id="loginError"></div>
+      <button type="submit" class="auth-btn" id="loginBtn">Войти</button>
+    </form>
+  </div>
+</div>
+
 <!-- SIDEBAR (mobile overlay + desktop inline) -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <aside class="sidebar" id="sidebar">
@@ -898,7 +1013,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v6.3</span>
+    <span class="ver">v6.4</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -959,6 +1074,13 @@ a{color:var(--accent2);text-decoration:none}
       <button class="sc-close" id="settingsClose">✕</button>
     </div>
     <div class="sc-body">
+      <!-- Profile Card -->
+      <div class="profile-card" id="profileCard">
+        <div class="profile-avatar" id="profileAvatar">S</div>
+        <div class="profile-name" id="profileName">Гость</div>
+        <div class="profile-email" id="profileEmail">Не авторизован</div>
+      </div>
+      <button class="btn-logout" id="btnLogout" style="display:none">🚪 Выйти из аккаунта</button>
       <div class="field" style="display:none">
         <label>🔑 API Key (OpenRouter)</label>
         <input type="password" id="apiKeyInput" placeholder="sk-or-v1-..." autocomplete="off"/>
@@ -973,7 +1095,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.3</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.4</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -1009,7 +1131,7 @@ a{color:var(--accent2);text-decoration:none}
 const CFG={
   API:'https://openrouter.ai/api/v1/chat/completions',
   KEY:atob('c2stb3ItdjEtMzc5MGY2YTdjMmFhMjNmNzc3NDE5YTFlOWI2NTdmYzc1MTE2NTVmMzQ3MGQ0OGQ0ZjFhNDU1ZjQ5Mjk4NTQxMg=='),
-  VERSION:'6.3',
+  VERSION:'6.4',
   DEV:'Safarali Group',
   MODELS:[
     {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢',cap:[]},
@@ -1051,6 +1173,85 @@ function renderLogs(){
     return`<div class="lp-entry ${l.type}"><span class="lp-ts">${time}</span><span class="lp-type">${l.type}</span>${esc(l.msg)}${l.data?' '+esc(typeof l.data==='string'?l.data:JSON.stringify(l.data).slice(0,200)):''}</div>`;
   }).join('');
   el.scrollTop=0;
+}
+
+// ===== AUTH SYSTEM =====
+function hashPass(p){let h=0;for(let i=0;i<p.length;i++){h=((h<<5)-h)+p.charCodeAt(i);h|=0}return 'h'+Math.abs(h).toString(36)}
+function loadUser(){try{return JSON.parse(localStorage.getItem('sai_user')||'null')}catch(e){return null}}
+function saveUser(u){localStorage.setItem('sai_user',JSON.stringify(u))}
+function clearUser(){localStorage.removeItem('sai_user')}
+function isLoggedIn(){return !!loadUser()}
+function showAuth(){$('authOverlay').classList.remove('hidden')}
+function hideAuth(){$('authOverlay').classList.add('hidden')}
+
+function initAuth(){
+  // Tab switching
+  $('tabRegister').addEventListener('click',()=>{
+    $('tabRegister').classList.add('active');
+    $('tabLogin').classList.remove('active');
+    $('registerForm').classList.remove('hidden');
+    $('loginForm').classList.add('hidden');
+  });
+  $('tabLogin').addEventListener('click',()=>{
+    $('tabLogin').classList.add('active');
+    $('tabRegister').classList.remove('active');
+    $('loginForm').classList.remove('hidden');
+    $('registerForm').classList.add('hidden');
+  });
+
+  // Register
+  $('registerForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const name=$('regName').value.trim();
+    const email=$('regEmail').value.trim().toLowerCase();
+    const pass=$('regPass').value;
+    const pass2=$('regPass2').value;
+    const err=$('regError');
+    err.textContent='';
+    if(pass!==pass2){err.textContent='Пароли не совпадают';return}
+    if(pass.length<4){err.textContent='Пароль минимум 4 символа';return}
+    // Check existing
+    const users=JSON.parse(localStorage.getItem('sai_users')||'[]');
+    if(users.find(u=>u.email===email)){err.textContent='Этот email уже зарегистрирован';return}
+    const user={name,email,pass:hashPass(pass),ts:Date.now()};
+    users.push(user);
+    localStorage.setItem('sai_users',JSON.stringify(users));
+    saveUser({name,email,ts:user.ts});
+    log('AUTH','User registered: '+email);
+    toast('✅ Добро пожаловать, '+name+'!');
+    hideAuth();
+  });
+
+  // Login
+  $('loginForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const email=$('loginEmail').value.trim().toLowerCase();
+    const pass=$('loginPass').value;
+    const err=$('loginError');
+    err.textContent='';
+    const users=JSON.parse(localStorage.getItem('sai_users')||'[]');
+    const user=users.find(u=>u.email===email&&u.pass===hashPass(pass));
+    if(!user){err.textContent='Неверный email или пароль';return}
+    saveUser({name:user.name,email:user.email,ts:user.ts});
+    log('AUTH','User logged in: '+email);
+    toast('👋 С возвращением, '+user.name+'!');
+    hideAuth();
+  });
+
+  // Forgot password - reset
+  $('forgotPass')?.addEventListener('click',()=>{
+    const email=prompt('Введите email для сброса пароля:');
+    if(!email)return;
+    const users=JSON.parse(localStorage.getItem('sai_users')||'[]');
+    const idx=users.findIndex(u=>u.email===email.toLowerCase().trim());
+    if(idx===-1){toast('❌ Email не найден');return}
+    const newPass=prompt('Введите новый пароль (мин. 4 символа):');
+    if(!newPass||newPass.length<4){toast('❌ Пароль слишком короткий');return}
+    users[idx].pass=hashPass(newPass);
+    localStorage.setItem('sai_users',JSON.stringify(users));
+    log('AUTH','Password reset for: '+email);
+    toast('✅ Пароль обновлён! Войдите заново.');
+  });
 }
 
 // ===== LIGHTBOX =====
@@ -1342,6 +1543,7 @@ function getApiHistory(){
 }
 
 async function sendMessage(){
+  if(!isLoggedIn()){showAuth();toast('⚠️ Войдите или зарегистрируйтесь');return}
   if(S.loading){stopGeneration();return}
   const inp=$('msgInput');
   const text=inp.value.trim();
@@ -1492,6 +1694,19 @@ function openSettings(){
   const hint=$('apiKeyHint');
   if(CFG.KEY){hint.textContent='Ключ уже встроен в приложение ✅';hint.style.color='#22c55e'}
   else{hint.textContent='Введите ключ из openrouter.ai/keys';hint.style.color='var(--text3)'}
+  // Profile
+  const user=loadUser();
+  if(user){
+    $('profileAvatar').textContent=user.name.charAt(0).toUpperCase();
+    $('profileName').textContent=user.name;
+    $('profileEmail').textContent=user.email;
+    $('btnLogout').style.display='block';
+  }else{
+    $('profileAvatar').textContent='G';
+    $('profileName').textContent='Гость';
+    $('profileEmail').textContent='Не авторизован';
+    $('btnLogout').style.display='none';
+  }
   $('settingsModal').classList.add('show');
 }
 function closeSettings(){$('settingsModal').classList.remove('show')}
@@ -1560,6 +1775,15 @@ function bindEvents(){
   $('settingsCancel').addEventListener('click',closeSettings);
   $('settingsSave').addEventListener('click',saveSettingsUI);
   $('settingsModal').addEventListener('click',e=>{if(e.target===$('settingsModal'))closeSettings()});
+
+  // Logout
+  $('btnLogout').addEventListener('click',()=>{
+    clearUser();
+    log('AUTH','User logged out');
+    closeSettings();
+    showAuth();
+    toast('👋 Вы вышли из аккаунта');
+  });
 
   // Log panel
   $('logBtn').addEventListener('click',()=>{
@@ -1693,6 +1917,9 @@ function init(){
   loadChats();renderChatList();renderMessages();
   bindEvents();startFocusWatchdog();
   checkSendReady();
+  initAuth();
+  // Show auth if not logged in
+  if(!isLoggedIn())showAuth();else hideAuth();
   console.log('🚀 S AI v'+CFG.VERSION+' ready');
   log('SYS','S AI v'+CFG.VERSION+' initialized');
 }
