@@ -839,7 +839,7 @@ a{color:var(--accent2);text-decoration:none}
   <div class="logo">
     <div class="icon">S</div>
     <span class="name">S AI</span>
-    <span class="ver">v6.0</span>
+    <span class="ver">v6.1</span>
   </div>
   <div class="model-pill" id="modelPill">
     <span class="dot"></span>
@@ -907,7 +907,7 @@ a{color:var(--accent2);text-decoration:none}
       </div>
       <div class="app-info-card">
         <div class="ai-name">📱 S AI by Safarali Group</div>
-        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.0</span></div>
+        <div class="ai-row"><span class="ai-label">Версия</span><span class="ai-val">6.1</span></div>
         <div class="ai-row"><span class="ai-label">Бренд</span><span class="ai-val">Safarali Group</span></div>
         <div class="ai-row"><span class="ai-label">Модели</span><span class="ai-val">14 FREE + Vision</span></div>
         <div class="ai-row"><span class="ai-label">Сайт</span><span class="ai-val">safarali.group</span></div>
@@ -934,7 +934,7 @@ a{color:var(--accent2);text-decoration:none}
 const CFG={
   API:'https://openrouter.ai/api/v1/chat/completions',
   KEY:atob('c2stb3ItdjEtMzc5MGY2YTdjMmFhMjNmNzc3NDE5YTFlOWI2NTdmYzc1MTE2NTVmMzQ3MGQ0OGQ0ZjFhNDU1ZjQ5Mjk4NTQxMg=='),
-  VERSION:'6.0',
+  VERSION:'6.1',
   DEV:'Safarali Group',
   MODELS:[
     {id:'nvidia/nemotron-3-ultra-550b-a55b:free',n:'Nemotron 3 Ultra 550B',d:'NVIDIA · 550B · Фронтальный reasoning · 1M ctx',icon:'🟢'},
@@ -1225,7 +1225,17 @@ function getApiHistory(){
   const recent=S.msgs.filter(m=>!m.loading).slice(-20);
   for(const m of recent){
     if(m.role==='assistant'&&m.content)hist.push({role:'assistant',content:m.content});
-    if(m.role==='user'&&m.content)hist.push({role:'user',content:m.content});
+    if(m.role==='user'){
+      if(m.img){
+        hist.push({role:'user',content:[{type:'text',text:m.content||'Опиши изображение'},{type:'image_url',image_url:{url:m.img,detail:'auto'}}]});
+      }else if(m.video){
+        hist.push({role:'user',content:[{type:'text',text:m.content||'Опиши видео'},{type:'image_url',image_url:{url:m.video,detail:'auto'}}]});
+      }else{
+        let c=m.content||'';
+        if(m.file)c+='[Файл: '+m.file.name+']';
+        hist.push({role:'user',content:c});
+      }
+    }
   }
   return hist;
 }
@@ -1249,6 +1259,7 @@ async function sendMessage(){
   saveCurrent();
 
   inp.value='';inp.style.height='auto';
+  const attImg=S.img;const attVideo=S.video;const attFile=S.file;const attFileName=S.fileName;const attFileSize=S.fileSize;
   S.img=null;S.video=null;S.file=null;S.fileName='';S.fileSize=0;
   $('attachmentPreview').style.display='none';
   $('attPreviewInner').innerHTML='';
@@ -1269,7 +1280,11 @@ async function sendMessage(){
   try{
     const model=getModelId();
     const history=getApiHistory();
+    const savedImg=attImg;const savedVideo=attVideo;const savedFile=attFile;
+    // Временно возвращаем вложения для API
+    S.img=savedImg;S.video=savedVideo;S.file=savedFile;S.fileName=attFileName;S.fileSize=attFileSize;
     const userMsgs=buildApiMessages(text);
+    S.img=null;S.video=null;S.file=null;S.fileName='';S.fileSize=0;
     const messages=[...history.slice(0,-1),...userMsgs];
 
     S.abort=new AbortController();
